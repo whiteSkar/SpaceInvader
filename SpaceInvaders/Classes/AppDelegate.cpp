@@ -20,8 +20,17 @@ bool AppDelegate::applicationDidFinishLaunching()
     auto glview = director->getOpenGLView();
     if(!glview) {
         glview = GLView::create("Space Invaders Retro");
+        //glview->setFrameSize(1280, 1920);
+        //glview->setFrameSize(1920, 1280);
+
+        //#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
+        //    glview->setFrameZoomFactor(0.5f);
+        //#endif
+
         director->setOpenGLView(glview);
     }
+
+    glview->setDesignResolutionSize(1280, 1920, ResolutionPolicy::NO_BORDER);
 
     // turn on display FPS
     director->setDisplayStats(false);
