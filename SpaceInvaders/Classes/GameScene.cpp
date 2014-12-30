@@ -30,7 +30,11 @@ bool GameScene::init()
     visibleSize = Director::getInstance()->getVisibleSize();
     visibleOrigin = Director::getInstance()->getVisibleOrigin();
 
+    srand(time(NULL));
+
     enemyMoveElapsedTime = 0;
+    enemyMissileElapsedTime = 0;
+    enemyNextMissileTimeInterval = rand() * (ENEMY_MISSILE_INTERVAL_MAX - ENEMY_MISSILE_INTERVAL_MAX) + ENEMY_MISSILE_INTERVAL_MIN;
     enemyDeltaX = visibleSize.width * 0.7 / 40;   // 40 movments from side to side  // doesn't seem like it's actually 40 times? investigate later
 
     /////////////////////////////
@@ -92,6 +96,8 @@ bool GameScene::init()
 void GameScene::update(float dt)
 {
     updateEnemy(dt);
+    enemyShootsMissile(dt);
+    updateEnemyMissiles(dt);
 
     if (missile->isVisible())
     {
@@ -143,12 +149,51 @@ void GameScene::updateEnemy(float dt)
     }
 }
 
+void GameScene::updateEnemyMissiles(float dt)
+{
+    for (auto it = enemyMissiles.begin(); it != enemyMissiles.end(); ++it)
+    {
+        auto missile = *it;
+        missile->setPositionY(missile->getPositionY() - MISSILE_SPEED * dt);
+    }
+}
+
+void GameScene::enemyShootsMissile(float dt)
+{
+    enemyMissileElapsedTime += dt;
+    if (enemyMissileElapsedTime >= enemyNextMissileTimeInterval)
+    {
+        auto missile = Sprite::create("missile.png");   // possibly use different missile image for enemy
+        missile->setPosition(enemy->getPositionX(), enemy->getPositionY() - enemy->getBoundingBox().size.height/2 - missile->getBoundingBox().size.height/2);
+        this->addChild(missile, 2);
+
+        enemyMissiles.push_back(missile);
+
+        enemyNextMissileTimeInterval = rand() * (ENEMY_MISSILE_INTERVAL_MAX - ENEMY_MISSILE_INTERVAL_MAX) + ENEMY_MISSILE_INTERVAL_MIN;
+        enemyMissileElapsedTime = 0.0f;
+    }
+}
+
 void GameScene::checkCollision()
 {
     if (missile->getBoundingBox().intersectsRect(enemy->getBoundingBox()))
     {
         missile->setVisible(false);
         enemy->setVisible(false);
+    }
+
+    for (auto it = enemyMissiles.begin(); it != enemyMissiles.end(); )
+    {
+        auto missile = *it;
+        if (missile->getBoundingBox().intersectsRect(player->getBoundingBox()) || missile->getPositionY() + missile->getBoundingBox().size.height/2 < visibleOrigin.y)
+        {
+            it = enemyMissiles.erase(it);
+            this->removeChild(missile);
+        }
+        else
+        {
+            ++it;
+        }
     }
 }
 

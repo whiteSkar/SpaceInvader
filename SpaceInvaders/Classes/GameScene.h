@@ -7,6 +7,8 @@ static const float PLAYER_SPEED = 300.0f;
 static const float MISSILE_SPEED = 600.0f;
 
 static const float ENEMY_MOVE_INTERVAL = 0.5f;
+static const float ENEMY_MISSILE_INTERVAL_MAX = 0.5f;
+static const float ENEMY_MISSILE_INTERVAL_MIN = 0.3f;
 
 class GameScene : public cocos2d::Layer
 {
@@ -30,6 +32,8 @@ public:
 
     void update(float dt);
     void updateEnemy(float dt);
+    void updateEnemyMissiles(float dt);
+    void enemyShootsMissile(float dt);
 
     void checkCollision();
     
@@ -45,6 +49,9 @@ public:
 
     float enemyDeltaX;
     float enemyMoveElapsedTime;
+    float enemyNextMissileTimeInterval; // probably needs to have enemy class to hold all these values for each enemy
+    float enemyMissileElapsedTime;
+    std::vector<cocos2d::Sprite*> enemyMissiles;
 };
 
 #endif // __GAME_SCENE_H__
