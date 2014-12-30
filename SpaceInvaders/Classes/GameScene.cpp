@@ -53,15 +53,15 @@ bool GameScene::init()
     // position the label on the center of the screen
     label->setPosition(Point(visibleOrigin.x + visibleSize.width/2,
                             visibleOrigin.y + visibleSize.height - label->getContentSize().height));
-
-    // add the label as a child to this layer
     this->addChild(label, 1);
 
     player = Sprite::create("player.png");
     player->setPosition(Point(visibleOrigin.x + visibleSize.width / 2, visibleOrigin.y + visibleSize.height * 0.2f));
-
-    // add the sprite as a child to this layer
     this->addChild(player, 1);
+
+    missile = Sprite::create("missile.png");
+    missile->setVisible(false);
+    this->addChild(missile, 1);
 
     isTouchDown = false;
     currentTouchPos = Point::ZERO;
@@ -83,8 +83,18 @@ bool GameScene::init()
 
 void GameScene::update(float dt)
 {
+    if (missile->getPositionY() - missile->getBoundingBox().size.height/2 > visibleOrigin.y + visibleSize.height)
+    {
+        missile->setVisible(false);
+    }
+    else
+    {
+        missile->setPositionY(missile->getPositionY() + MISSILE_SPEED * dt);
+    }
+
     if (isTouchDown)
     {
+        // touch HUD for movement and missile shoot => movement on the bottom right and shooting on the bottom left
         auto direction = 1;
         if (currentTouchPos.x <= visibleSize.width / 2)
         {
@@ -92,6 +102,12 @@ void GameScene::update(float dt)
         }
 
         player->setPositionX(player->getPositionX() + PLAYER_SPEED * dt * direction);
+
+        if (!missile->isVisible())
+        {
+            missile->setPosition(player->getPositionX(), player->getPositionY() + player->getBoundingBox().size.height/2 + missile->getBoundingBox().size.height/2);
+            missile->setVisible(true);
+        }
     }
 }
 

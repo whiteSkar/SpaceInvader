@@ -4,6 +4,7 @@
 #include "cocos2d.h"
 
 static const float PLAYER_SPEED = 300.0f;
+static const float MISSILE_SPEED = 600.0f;
 
 class GameScene : public cocos2d::Layer
 {
@@ -34,6 +35,7 @@ public:
     cocos2d::Point visibleOrigin;
 
     cocos2d::Sprite *player;
+    cocos2d::Sprite *missile;
 };
 
 #endif // __GAME_SCENE_H__
