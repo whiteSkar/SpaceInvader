@@ -6,6 +6,8 @@
 static const float PLAYER_SPEED = 300.0f;
 static const float MISSILE_SPEED = 600.0f;
 
+static const float ENEMY_MOVE_INTERVAL = 0.5f;
+
 class GameScene : public cocos2d::Layer
 {
 public:
@@ -27,6 +29,7 @@ public:
 	void onTouchCancelled(cocos2d::Touch* touch, cocos2d::Event* event);
 
     void update(float dt);
+    void updateEnemy(float dt);
     
     bool isTouchDown;
 	cocos2d::Point currentTouchPos;
@@ -36,6 +39,10 @@ public:
 
     cocos2d::Sprite *player;
     cocos2d::Sprite *missile;
+    cocos2d::Sprite *enemy;
+
+    float enemyDeltaX;
+    float enemyMoveElapsedTime;
 };
 
 #endif // __GAME_SCENE_H__

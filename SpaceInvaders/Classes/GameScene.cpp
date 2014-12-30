@@ -30,6 +30,9 @@ bool GameScene::init()
     visibleSize = Director::getInstance()->getVisibleSize();
     visibleOrigin = Director::getInstance()->getVisibleOrigin();
 
+    enemyMoveElapsedTime = 0;
+    enemyDeltaX = visibleSize.width * 0.7 / 40;   // 40 movments from side to side  // doesn't seem like it's actually 40 times? investigate later
+
     /////////////////////////////
     // 2. add a menu item with "X" image, which is clicked to quit the program
     //    you may modify it.
@@ -57,11 +60,16 @@ bool GameScene::init()
 
     player = Sprite::create("player.png");
     player->setPosition(Point(visibleOrigin.x + visibleSize.width / 2, visibleOrigin.y + visibleSize.height * 0.2f));
-    this->addChild(player, 1);
+    this->addChild(player, 1);  // refactor z order
 
     missile = Sprite::create("missile.png");
     missile->setVisible(false);
-    this->addChild(missile, 1);
+    this->addChild(missile, 2);
+
+    enemy = Sprite::create("enemy_large.png");
+    enemy->setPosition(visibleOrigin.x + visibleSize.width * 0.15f + enemy->getBoundingBox().size.width/2,  // magic number
+                       visibleOrigin.y + visibleSize.height * 0.9f - enemy->getBoundingBox().size.height/2);
+    this->addChild(enemy, 1);
 
     isTouchDown = false;
     currentTouchPos = Point::ZERO;
@@ -83,6 +91,8 @@ bool GameScene::init()
 
 void GameScene::update(float dt)
 {
+    updateEnemy(dt);
+
     if (missile->getPositionY() - missile->getBoundingBox().size.height/2 > visibleOrigin.y + visibleSize.height)
     {
         missile->setVisible(false);
@@ -108,6 +118,23 @@ void GameScene::update(float dt)
             missile->setPosition(player->getPositionX(), player->getPositionY() + player->getBoundingBox().size.height/2 + missile->getBoundingBox().size.height/2);
             missile->setVisible(true);
         }
+    }
+}
+
+void GameScene::updateEnemy(float dt)
+{
+    enemyMoveElapsedTime += dt;
+    if (enemyMoveElapsedTime >= ENEMY_MOVE_INTERVAL)
+    {
+        enemy->setPositionX(enemy->getPositionX() + enemyDeltaX);
+
+        if (enemy->getPositionX() + enemy->getBoundingBox().size.width/2 >= visibleSize.width * 0.85 || // magic number
+            enemy->getPositionX() - enemy->getBoundingBox().size.width/2 <= visibleSize.width * 0.15)
+        {
+            enemyDeltaX *= -1;
+        }
+
+        enemyMoveElapsedTime -= ENEMY_MOVE_INTERVAL;
     }
 }
 
