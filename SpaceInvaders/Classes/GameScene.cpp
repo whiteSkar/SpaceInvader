@@ -93,13 +93,16 @@ void GameScene::update(float dt)
 {
     updateEnemy(dt);
 
-    if (missile->getPositionY() - missile->getBoundingBox().size.height/2 > visibleOrigin.y + visibleSize.height)
+    if (missile->isVisible())
     {
-        missile->setVisible(false);
-    }
-    else
-    {
-        missile->setPositionY(missile->getPositionY() + MISSILE_SPEED * dt);
+        if (missile->getPositionY() - missile->getBoundingBox().size.height/2 > visibleOrigin.y + visibleSize.height)
+        {
+            missile->setVisible(false);
+        }
+        else
+        {
+            missile->setPositionY(missile->getPositionY() + MISSILE_SPEED * dt);
+        }
     }
 
     if (isTouchDown)
@@ -119,6 +122,8 @@ void GameScene::update(float dt)
             missile->setVisible(true);
         }
     }
+
+    this->checkCollision();
 }
 
 void GameScene::updateEnemy(float dt)
@@ -135,6 +140,15 @@ void GameScene::updateEnemy(float dt)
         }
 
         enemyMoveElapsedTime -= ENEMY_MOVE_INTERVAL;
+    }
+}
+
+void GameScene::checkCollision()
+{
+    if (missile->getBoundingBox().intersectsRect(enemy->getBoundingBox()))
+    {
+        missile->setVisible(false);
+        enemy->setVisible(false);
     }
 }
 

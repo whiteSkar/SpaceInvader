@@ -30,6 +30,8 @@ public:
 
     void update(float dt);
     void updateEnemy(float dt);
+
+    void checkCollision();
     
     bool isTouchDown;
 	cocos2d::Point currentTouchPos;
