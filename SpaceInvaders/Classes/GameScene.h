@@ -2,6 +2,7 @@
 #define __GAME_SCENE_H__
 
 #include "cocos2d.h"
+#include "Enemy.h"
 
 static const float PLAYER_SPEED = 300.0f;
 static const float MISSILE_SPEED = 600.0f;
@@ -45,7 +46,7 @@ public:
 
     cocos2d::Sprite *player;
     cocos2d::Sprite *missile;
-    cocos2d::Sprite *enemy;
+    Enemy *enemy;
 
     float enemyDeltaX;
     float enemyMoveElapsedTime;

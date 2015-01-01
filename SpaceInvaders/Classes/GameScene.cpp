@@ -70,10 +70,13 @@ bool GameScene::init()
     missile->setVisible(false);
     this->addChild(missile, 2);
 
-    enemy = Sprite::create("enemy_large.png");
-    enemy->setPosition(visibleOrigin.x + visibleSize.width * 0.15f + enemy->getBoundingBox().size.width/2,  // magic number
-                       visibleOrigin.y + visibleSize.height * 0.9f - enemy->getBoundingBox().size.height/2);
-    this->addChild(enemy, 1);
+    auto enemySprite = Sprite::create("enemy_large.png");
+    auto enemySprite2 = Sprite::create("enemy_large2.png");
+    enemy = new Enemy(enemySprite, enemySprite2);
+    enemy->setPosition(Point(visibleOrigin.x + visibleSize.width * 0.15f + enemySprite->getBoundingBox().size.width/2,  // magic number
+                       visibleOrigin.y + visibleSize.height * 0.9f - enemySprite->getBoundingBox().size.height/2));
+    this->addChild(enemySprite, 1);
+    this->addChild(enemySprite2, 1);
 
     isTouchDown = false;
     currentTouchPos = Point::ZERO;
@@ -138,9 +141,10 @@ void GameScene::updateEnemy(float dt)
     if (enemyMoveElapsedTime >= ENEMY_MOVE_INTERVAL)
     {
         enemy->setPositionX(enemy->getPositionX() + enemyDeltaX);
+        enemy->animateToNextFrame();
 
-        if (enemy->getPositionX() + enemy->getBoundingBox().size.width/2 >= visibleSize.width * 0.85 || // magic number
-            enemy->getPositionX() - enemy->getBoundingBox().size.width/2 <= visibleSize.width * 0.15)
+        if (enemy->getPositionX() + enemy->getSize().width/2 >= visibleSize.width * 0.85 || // magic number
+            enemy->getPositionX() - enemy->getSize().width/2 <= visibleSize.width * 0.15)
         {
             enemyDeltaX *= -1;
         }
@@ -160,11 +164,16 @@ void GameScene::updateEnemyMissiles(float dt)
 
 void GameScene::enemyShootsMissile(float dt)
 {
+    if (!enemy->isAlive()) return;
+
+    // I want enemy to shoot missile not game scene to shoot missile
+    // But I need references to missiles to check collisions here
+    // What is the best way??
     enemyMissileElapsedTime += dt;
     if (enemyMissileElapsedTime >= enemyNextMissileTimeInterval)
     {
         auto missile = Sprite::create("missile.png");   // possibly use different missile image for enemy
-        missile->setPosition(enemy->getPositionX(), enemy->getPositionY() - enemy->getBoundingBox().size.height/2 - missile->getBoundingBox().size.height/2);
+        missile->setPosition(enemy->getPositionX(), enemy->getPositionY() - enemy->getSize().height/2 - missile->getBoundingBox().size.height/2);
         this->addChild(missile, 2);
 
         enemyMissiles.push_back(missile);
@@ -176,10 +185,10 @@ void GameScene::enemyShootsMissile(float dt)
 
 void GameScene::checkCollision()
 {
-    if (missile->getBoundingBox().intersectsRect(enemy->getBoundingBox()))
+    if (enemy->isAlive() && missile->getBoundingBox().intersectsRect(enemy->getBoundingBox()))
     {
         missile->setVisible(false);
-        enemy->setVisible(false);
+        enemy->setAlive(false);
     }
 
     for (auto it = enemyMissiles.begin(); it != enemyMissiles.end(); )
