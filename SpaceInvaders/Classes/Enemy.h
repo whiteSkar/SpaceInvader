@@ -3,21 +3,17 @@
 
 #include "cocos2d.h"
 
-class Enemy
+class Enemy : public cocos2d::Node
 {
 public:
-    Enemy(cocos2d::Sprite *sprite, cocos2d::Sprite *sprite2);   // only need two sprites. This way suffices
-    ~Enemy();
+    static Enemy* create(cocos2d::Sprite *sprite, cocos2d::Sprite *sprite2); // only need two sprites. This way suffices
 
-    cocos2d::Point getPosition();
-    float getPositionX();
-    float getPositionY();
-    void setPosition(cocos2d::Point position);
-    void setPositionX(float positionX);
-    void setPositionY(float positionY);
+    bool initWithSprites(cocos2d::Sprite *sprite, cocos2d::Sprite *sprite2);
 
     cocos2d::Rect getBoundingBox();
     cocos2d::Size getSize();
+
+    //virtual void draw (cocos2d::Renderer* renderer, const kmMat4& transform, bool transformUpdated);    // debugging purpose
 
     bool isAlive();
     void setAlive(bool isAlive);

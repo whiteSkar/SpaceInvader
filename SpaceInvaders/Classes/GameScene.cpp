@@ -72,11 +72,12 @@ bool GameScene::init()
 
     auto enemySprite = Sprite::create("enemy_large.png");
     auto enemySprite2 = Sprite::create("enemy_large2.png");
-    enemy = new Enemy(enemySprite, enemySprite2);
+    enemy = Enemy::create(enemySprite, enemySprite2);
     enemy->setPosition(Point(visibleOrigin.x + visibleSize.width * 0.15f + enemySprite->getBoundingBox().size.width/2,  // magic number
                        visibleOrigin.y + visibleSize.height * 0.9f - enemySprite->getBoundingBox().size.height/2));
-    this->addChild(enemySprite, 1);
-    this->addChild(enemySprite2, 1);
+    this->addChild(enemy, 1);
+    //this->addChild(enemySprite, 1);
+    //this->addChild(enemySprite2, 1);
 
     isTouchDown = false;
     currentTouchPos = Point::ZERO;
@@ -185,7 +186,7 @@ void GameScene::enemyShootsMissile(float dt)
 
 void GameScene::checkCollision()
 {
-    if (enemy->isAlive() && missile->getBoundingBox().intersectsRect(enemy->getBoundingBox()))
+    if (enemy->isAlive() && missile->isVisible() && missile->getBoundingBox().intersectsRect(enemy->getBoundingBox()))
     {
         missile->setVisible(false);
         enemy->setAlive(false);

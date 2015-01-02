@@ -2,67 +2,52 @@
 
 USING_NS_CC;
 
-Enemy::Enemy(Sprite *sprite, Sprite *sprite2)   // size of first sprite is the size of this object.
+Enemy* Enemy::create(Sprite *sprite, Sprite *sprite2)
 {
-    _sprite = sprite;
-    _sprite->setVisible(true);
-    _sprite2 = sprite2;
-    _sprite2->setVisible(false);
-    //auto scene = Director::getInstance()->getRunningScene();  // I wanna do this but enemy is initialized in Scene init method. How should I do it..hm
-    //scene->addChild(_sprite, 1);   // refactor zorder
-
-    _isAlive = true;
-
-    // Should the Sprite be added as a child to the scene outside of this object or in here?
+    Enemy *enemy = new Enemy();
+    if (enemy && enemy->initWithSprites(sprite, sprite2))
+    {
+        enemy->autorelease();
+        return enemy;
+    }
+    CC_SAFE_DELETE(enemy);
+    return nullptr;
 }
 
-Enemy::~Enemy()
+bool Enemy::initWithSprites(Sprite *sprite, Sprite *sprite2)
 {
+    bool result;
+    if (Node::init())
+    {
+        _sprite = sprite;
+        _sprite->setVisible(true);
+        _sprite2 = sprite2;
+        _sprite2->setVisible(false);
 
-}
+        _sprite->setPosition(Point::ZERO);
+        _sprite2->setPosition(Point::ZERO);
 
-Point Enemy::getPosition()
-{
-    return _sprite->getPosition();
-}
+        this->addChild(sprite);
+        this->addChild(sprite2);
 
-float Enemy::getPositionX()
-{
-    return _sprite->getPositionX();
-}
+         _isAlive = true;
+         this->setVisible(true);
 
-float Enemy::getPositionY()
-{
-    return _sprite->getPositionY();
-}
+        result = true;
+    }
+    else
+    {
+        result = false;
+    }
 
-void Enemy::setPosition(cocos2d::Point position)
-{
-    if (!_isAlive) return;
-
-    _sprite->setPosition(position);
-    _sprite2->setPosition(position);
-}
-
-void Enemy::setPositionX(float positionX)
-{
-    if (!_isAlive) return;
-
-    _sprite->setPositionX(positionX);
-    _sprite2->setPositionX(positionX);
-}
-
-void Enemy::setPositionY(float positionY)
-{
-    if (!_isAlive) return;
-
-    _sprite->setPositionY(positionY);
-    _sprite2->setPositionY(positionY);
+    return result;
 }
 
 Rect Enemy::getBoundingBox()
 {
-    return _sprite->getBoundingBox();
+    auto box = _sprite->getBoundingBox();
+    box.origin = Point(Node::getPositionX() - box.size.width/2, Node::getPositionY() - box.size.height/2);
+    return box;
 }
 
 Size Enemy::getSize()
@@ -78,12 +63,7 @@ bool Enemy::isAlive()
 void Enemy::setAlive(bool isAlive)
 {
     _isAlive = isAlive;
-
-    if (!isAlive)
-    {
-        _sprite->setVisible(false);
-        _sprite2->setVisible(false);
-    }
+    Node::setVisible(isAlive);
 }
 
 void Enemy::animateToNextFrame()
@@ -101,3 +81,11 @@ void Enemy::animateToNextFrame()
         _sprite2->setVisible(false);
     }
 }
+
+//void Enemy::draw (Renderer* renderer, const kmMat4& transform, bool transformUpdated)
+//{
+//    auto box = this->getBoundingBox();
+//    Node::draw(renderer, transform, transformUpdated);
+//    ccDrawColor4B(255, 0, 0, 255);
+//    ccDrawRect(Point::ZERO, Point(box.size.width,  box.size.height));
+//}
