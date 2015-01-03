@@ -30,11 +30,17 @@ bool Enemy::initWithSprites(Sprite *sprite, Sprite *sprite2)
         this->addChild(sprite);
         this->addChild(sprite2);
 
-         _isAlive = true;
-         this->setVisible(true);
+        _isAlive = true;
+        this->setVisible(true);
 
-         missileShootElapsedTime = 0.0f;
-         nextMissileTimeInterval = ((float) (rand() % ((ENEMY_MISSILE_INTERVAL_MAX - ENEMY_MISSILE_INTERVAL_MIN) * 10))) / 10.0f + ENEMY_MISSILE_INTERVAL_MIN; // duplicate code
+        missileShootElapsedTime = 0.0f;
+        nextMissileTimeInterval = ((float) (rand() % ((ENEMY_MISSILE_INTERVAL_MAX - ENEMY_MISSILE_INTERVAL_MIN) * 10))) / 10.0f + ENEMY_MISSILE_INTERVAL_MIN; // duplicate code
+
+        _missile = Sprite::create("missile.png");   // possibly use different missile image for enemy
+        _missile->setVisible(false);
+        this->addChild(_missile);
+
+        this->scheduleUpdate();
 
         result = true;
     }
@@ -44,6 +50,41 @@ bool Enemy::initWithSprites(Sprite *sprite, Sprite *sprite2)
     }
 
     return result;
+}
+
+void Enemy::update(float dt)
+{
+    if (!this->isAlive()) return;
+
+    missileShootElapsedTime += dt;
+    if (missileShootElapsedTime >= nextMissileTimeInterval && !_missile->isVisible())
+    {
+        missileShootElapsedTime = 0.0f;
+        nextMissileTimeInterval = ((float) (rand() % ((ENEMY_MISSILE_INTERVAL_MAX - ENEMY_MISSILE_INTERVAL_MIN) * 10))) / 10.0f + ENEMY_MISSILE_INTERVAL_MIN;
+
+        _missile->setPosition(Point(0, 0 - this->getSize().height/2 - _missile->getBoundingBox().size.height/2));
+        _missile->setVisible(true);
+    }
+
+    if (_missile->isVisible())
+    {
+        _missile->setPositionY(_missile->getPositionY() - MISSILE_SPEED * dt);
+    }
+}
+
+Sprite *Enemy::getMissile()
+{
+    return _missile;
+}
+
+void Enemy::missileHit()
+{
+    _missile->setVisible(false);
+}
+
+void Enemy::missileOutOfBound()
+{
+    _missile->setVisible(false);
 }
 
 Rect Enemy::getBoundingBox()
@@ -83,27 +124,6 @@ void Enemy::animateToNextFrame()
         _sprite->setVisible(true);
         _sprite2->setVisible(false);
     }
-}
-
-void Enemy::shootMissile()
-{
-    missileShootElapsedTime = 0.0f;
-    nextMissileTimeInterval = ((float) (rand() % ((ENEMY_MISSILE_INTERVAL_MAX - ENEMY_MISSILE_INTERVAL_MIN) * 10))) / 10.0f + ENEMY_MISSILE_INTERVAL_MIN;
-}
-
-void Enemy::increaseMissileShootElapsedTime(float dt)
-{
-    missileShootElapsedTime += dt;
-}
-
-float Enemy::getMissileShootElapsedTime()
-{
-    return missileShootElapsedTime;
-}
-
-float Enemy::getNextMissileTimeInterval()
-{
-    return nextMissileTimeInterval;
 }
 
 //void Enemy::draw (Renderer* renderer, const kmMat4& transform, bool transformUpdated)

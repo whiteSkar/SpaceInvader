@@ -108,8 +108,6 @@ bool GameScene::init()
 void GameScene::update(float dt)
 {
     updateEnemy(dt);
-    enemyShootsMissile(dt);
-    updateEnemyMissiles(dt);
 
     if (missile->isVisible())
     {
@@ -178,44 +176,6 @@ void GameScene::updateEnemy(float dt)
     }
 }
 
-void GameScene::updateEnemyMissiles(float dt)
-{
-    for (auto it = enemyMissiles.begin(); it != enemyMissiles.end(); ++it)
-    {
-        auto missile = *it;
-        missile->setPositionY(missile->getPositionY() - MISSILE_SPEED * dt);
-    }
-}
-
-void GameScene::enemyShootsMissile(float dt)
-{
-    // Need big refactoring. Shouldn't need a loop here. Each enemy is responsible for shotting not this scene
-
-    for (int i = 0; i < ENEMY_ROW_COUNT; ++i)
-    {
-        for (int j = 0; j < ENEMY_COL_COUNT; ++j)
-        {
-            auto enemy = enemies[i][j];
-            if (!enemy->isAlive()) continue;
-
-            // I want enemy to shoot missile not game scene to shoot missile
-            // But I need references to missiles to check collisions here
-            // What is the best way??
-            enemy->increaseMissileShootElapsedTime(dt);
-            if (enemy->getMissileShootElapsedTime() >= enemy->getNextMissileTimeInterval())
-            {
-                enemy->shootMissile();
-
-                auto missile = Sprite::create("missile.png");   // possibly use different missile image for enemy
-                missile->setPosition(enemy->getPositionX(), enemy->getPositionY() - enemy->getSize().height/2 - missile->getBoundingBox().size.height/2);
-                this->addChild(missile, 2);
-
-                enemyMissiles.push_back(missile);
-            }
-        }
-    }
-}
-
 void GameScene::checkCollision()
 {
     for (int i = 0; i < ENEMY_ROW_COUNT; ++i)
@@ -223,28 +183,24 @@ void GameScene::checkCollision()
         for (int j = 0; j < ENEMY_COL_COUNT; ++j)
         {
             auto enemy = enemies[i][j];
-            if (enemy->isAlive() && missile->isVisible() && missile->getBoundingBox().intersectsRect(enemy->getBoundingBox()))
+            if (!enemy->isVisible()) continue;
+
+            if (missile->isVisible() && missile->getBoundingBox().intersectsRect(enemy->getBoundingBox()))
             {
                 missile->setVisible(false);
                 enemy->setAlive(false);
             }
 
-            if (!missile->isVisible())
-                break;
-        }
-    }
+            auto enemyMissile = enemy->getMissile();
+            if (enemyMissile->isVisible() && enemyMissile->getBoundingBox().intersectsRect(player->getBoundingBox()))
+            {
+                enemy->missileHit();
+            }
 
-    for (auto it = enemyMissiles.begin(); it != enemyMissiles.end(); )
-    {
-        auto missile = *it;
-        if (missile->getBoundingBox().intersectsRect(player->getBoundingBox()) || missile->getPositionY() + missile->getBoundingBox().size.height/2 < visibleOrigin.y)
-        {
-            it = enemyMissiles.erase(it);
-            this->removeChild(missile);
-        }
-        else
-        {
-            ++it;
+            if (enemyMissile->getPositionY() + enemy->getPositionY() + enemyMissile->getBoundingBox().size.height/2 < visibleOrigin.y)
+            {
+                enemy->missileOutOfBound();
+            }
         }
     }
 }

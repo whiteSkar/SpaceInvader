@@ -6,6 +6,8 @@
 static const int ENEMY_MISSILE_INTERVAL_MAX = 7;
 static const int ENEMY_MISSILE_INTERVAL_MIN = 3;
 
+static const float MISSILE_SPEED = 600.0f;
+
 class Enemy : public cocos2d::Node
 {
 public:
@@ -18,20 +20,22 @@ public:
 
     //virtual void draw (cocos2d::Renderer* renderer, const kmMat4& transform, bool transformUpdated);    // debugging purpose
 
+    void update(float dt);
+
+    cocos2d::Sprite* getMissile();  // I don't like this method. What is the best way to check collision between this missile and the player?
+    void missileHit();
+    void missileOutOfBound();
+
     bool isAlive();
     void setAlive(bool isAlive);
-
-    void shootMissile();
-
-    void increaseMissileShootElapsedTime(float dt);
-    float getMissileShootElapsedTime();
-    float getNextMissileTimeInterval();
 
     void animateToNextFrame();
 
 private:
     cocos2d::Sprite *_sprite;
     cocos2d::Sprite *_sprite2;
+
+    cocos2d::Sprite *_missile;
 
     float missileShootElapsedTime;
     float nextMissileTimeInterval;

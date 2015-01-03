@@ -5,7 +5,6 @@
 #include "Enemy.h"
 
 static const float PLAYER_SPEED = 300.0f;
-static const float MISSILE_SPEED = 600.0f;
 
 static const float ENEMY_MOVE_INTERVAL = 0.5f;
 
@@ -34,8 +33,6 @@ public:
 
     void update(float dt);
     void updateEnemy(float dt);
-    void updateEnemyMissiles(float dt);
-    void enemyShootsMissile(float dt);
 
     void checkCollision();
     
@@ -52,7 +49,6 @@ public:
 
     float enemyDeltaX;
     float enemyMoveElapsedTime;
-    std::vector<cocos2d::Sprite*> enemyMissiles;
 };
 
 #endif // __GAME_SCENE_H__
