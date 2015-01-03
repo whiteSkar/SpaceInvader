@@ -122,7 +122,7 @@ void GameScene::update(float dt)
         }
         else
         {
-            missile->setPositionY(missile->getPositionY() + MISSILE_SPEED * dt);
+            missile->setPositionY(missile->getPositionY() + PLAYER_MISSILE_SPEED * dt);
         }
     }
 

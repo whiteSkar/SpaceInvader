@@ -5,6 +5,7 @@
 #include "Enemy.h"
 
 static const float PLAYER_SPEED = 300.0f;
+static const float PLAYER_MISSILE_SPEED = 1000.0f;
 
 static const float ENEMY_MOVE_INTERVAL = 0.5f;
 
