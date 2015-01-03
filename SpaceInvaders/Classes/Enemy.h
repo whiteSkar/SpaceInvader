@@ -3,8 +3,8 @@
 
 #include "cocos2d.h"
 
-static const float ENEMY_MISSILE_INTERVAL_MAX = 7.0f;
-static const float ENEMY_MISSILE_INTERVAL_MIN = 3.0f;
+static const int ENEMY_MISSILE_INTERVAL_MAX = 7;
+static const int ENEMY_MISSILE_INTERVAL_MIN = 3;
 
 class Enemy : public cocos2d::Node
 {

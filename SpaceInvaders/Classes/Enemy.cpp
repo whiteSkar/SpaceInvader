@@ -34,7 +34,7 @@ bool Enemy::initWithSprites(Sprite *sprite, Sprite *sprite2)
          this->setVisible(true);
 
          missileShootElapsedTime = 0.0f;
-         nextMissileTimeInterval = rand() * (ENEMY_MISSILE_INTERVAL_MAX - ENEMY_MISSILE_INTERVAL_MAX) + ENEMY_MISSILE_INTERVAL_MIN;
+         nextMissileTimeInterval = ((float) (rand() % ((ENEMY_MISSILE_INTERVAL_MAX - ENEMY_MISSILE_INTERVAL_MIN) * 10))) / 10.0f + ENEMY_MISSILE_INTERVAL_MIN; // duplicate code
 
         result = true;
     }
@@ -88,7 +88,7 @@ void Enemy::animateToNextFrame()
 void Enemy::shootMissile()
 {
     missileShootElapsedTime = 0.0f;
-    nextMissileTimeInterval = rand() * (ENEMY_MISSILE_INTERVAL_MAX - ENEMY_MISSILE_INTERVAL_MAX) + ENEMY_MISSILE_INTERVAL_MIN;
+    nextMissileTimeInterval = ((float) (rand() % ((ENEMY_MISSILE_INTERVAL_MAX - ENEMY_MISSILE_INTERVAL_MIN) * 10))) / 10.0f + ENEMY_MISSILE_INTERVAL_MIN;
 }
 
 void Enemy::increaseMissileShootElapsedTime(float dt)
