@@ -3,6 +3,9 @@
 
 #include "cocos2d.h"
 
+static const float ENEMY_MISSILE_INTERVAL_MAX = 7.0f;
+static const float ENEMY_MISSILE_INTERVAL_MIN = 3.0f;
+
 class Enemy : public cocos2d::Node
 {
 public:
@@ -18,11 +21,20 @@ public:
     bool isAlive();
     void setAlive(bool isAlive);
 
+    void shootMissile();
+
+    void increaseMissileShootElapsedTime(float dt);
+    float getMissileShootElapsedTime();
+    float getNextMissileTimeInterval();
+
     void animateToNextFrame();
 
 private:
     cocos2d::Sprite *_sprite;
     cocos2d::Sprite *_sprite2;
+
+    float missileShootElapsedTime;
+    float nextMissileTimeInterval;
     
     bool _isAlive;
 };

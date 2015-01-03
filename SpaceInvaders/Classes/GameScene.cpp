@@ -32,9 +32,7 @@ bool GameScene::init()
 
     srand(time(NULL));
 
-    enemyMoveElapsedTime = 0;
-    enemyMissileElapsedTime = 0;
-    enemyNextMissileTimeInterval = rand() * (ENEMY_MISSILE_INTERVAL_MAX - ENEMY_MISSILE_INTERVAL_MAX) + ENEMY_MISSILE_INTERVAL_MIN;
+    enemyMoveElapsedTime = 0;    
     enemyDeltaX = visibleSize.width * 0.7 / 40;   // 40 movments from side to side  // doesn't seem like it's actually 40 times? investigate later
 
     /////////////////////////////
@@ -70,14 +68,24 @@ bool GameScene::init()
     missile->setVisible(false);
     this->addChild(missile, 2);
 
-    auto enemySprite = Sprite::create("enemy_large.png");
-    auto enemySprite2 = Sprite::create("enemy_large2.png");
-    enemy = Enemy::create(enemySprite, enemySprite2);
-    enemy->setPosition(Point(visibleOrigin.x + visibleSize.width * 0.15f + enemySprite->getBoundingBox().size.width/2,  // magic number
-                       visibleOrigin.y + visibleSize.height * 0.9f - enemySprite->getBoundingBox().size.height/2));
-    this->addChild(enemy, 1);
-    //this->addChild(enemySprite, 1);
-    //this->addChild(enemySprite2, 1);
+    for (int i = 0; i < ENEMY_ROW_COUNT; ++i)
+    {
+        for (int j = 0; j < ENEMY_COL_COUNT; ++j)
+        {
+            auto enemySprite = Sprite::create("enemy_large.png");
+            auto enemySprite2 = Sprite::create("enemy_large2.png");
+            auto enemy = Enemy::create(enemySprite, enemySprite2);
+            
+            // Fix so that the the right most and left most enemy do not go beyond the screen edge
+            auto enemySize = enemy->getSize();
+            auto widthBetweenEnemies = (visibleSize.width * 0.7f - (enemySize.width * ENEMY_COL_COUNT)) / (ENEMY_COL_COUNT - 1);    // temporarily for height too
+            enemy->setPosition(Point(visibleOrigin.x + visibleSize.width * 0.15f + enemySize.width/2 + enemySize.width * j + widthBetweenEnemies * j,  // magic number
+                               visibleOrigin.y + visibleSize.height * 0.9f - enemySize.height/2 - enemySize.height * i - widthBetweenEnemies * i));
+            this->addChild(enemy, 1);
+
+            enemies[i][j] = enemy;
+        }
+    }
 
     isTouchDown = false;
     currentTouchPos = Point::ZERO;
@@ -141,11 +149,27 @@ void GameScene::updateEnemy(float dt)
     enemyMoveElapsedTime += dt;
     if (enemyMoveElapsedTime >= ENEMY_MOVE_INTERVAL)
     {
-        enemy->setPositionX(enemy->getPositionX() + enemyDeltaX);
-        enemy->animateToNextFrame();
+        Enemy *rightMostEnemy = nullptr;
+        Enemy *leftMostEnemy = nullptr;
 
-        if (enemy->getPositionX() + enemy->getSize().width/2 >= visibleSize.width * 0.85 || // magic number
-            enemy->getPositionX() - enemy->getSize().width/2 <= visibleSize.width * 0.15)
+        for (int i = 0; i < ENEMY_ROW_COUNT; ++i)
+        {
+            for (int j = 0; j < ENEMY_COL_COUNT; ++j)
+            {
+                auto enemy = enemies[i][j];
+                if (!enemy->isAlive()) continue;
+
+                enemy->setPositionX(enemy->getPositionX() + enemyDeltaX);
+                enemy->animateToNextFrame();
+
+                rightMostEnemy = enemy;
+                if (!leftMostEnemy)
+                    leftMostEnemy = enemy;
+            }
+        }
+
+        if (rightMostEnemy->getPositionX() + rightMostEnemy->getSize().width/2 >= visibleOrigin.x + visibleSize.width ||
+            leftMostEnemy->getPositionX() - leftMostEnemy->getSize().width/2 <= visibleOrigin.x)
         {
             enemyDeltaX *= -1;
         }
@@ -165,31 +189,49 @@ void GameScene::updateEnemyMissiles(float dt)
 
 void GameScene::enemyShootsMissile(float dt)
 {
-    if (!enemy->isAlive()) return;
+    // Need big refactoring. Shouldn't need a loop here. Each enemy is responsible for shotting not this scene
 
-    // I want enemy to shoot missile not game scene to shoot missile
-    // But I need references to missiles to check collisions here
-    // What is the best way??
-    enemyMissileElapsedTime += dt;
-    if (enemyMissileElapsedTime >= enemyNextMissileTimeInterval)
+    for (int i = 0; i < ENEMY_ROW_COUNT; ++i)
     {
-        auto missile = Sprite::create("missile.png");   // possibly use different missile image for enemy
-        missile->setPosition(enemy->getPositionX(), enemy->getPositionY() - enemy->getSize().height/2 - missile->getBoundingBox().size.height/2);
-        this->addChild(missile, 2);
+        for (int j = 0; j < ENEMY_COL_COUNT; ++j)
+        {
+            auto enemy = enemies[i][j];
+            if (!enemy->isAlive()) continue;
 
-        enemyMissiles.push_back(missile);
+            // I want enemy to shoot missile not game scene to shoot missile
+            // But I need references to missiles to check collisions here
+            // What is the best way??
+            enemy->increaseMissileShootElapsedTime(dt);
+            if (enemy->getMissileShootElapsedTime() >= enemy->getNextMissileTimeInterval())
+            {
+                enemy->shootMissile();
 
-        enemyNextMissileTimeInterval = rand() * (ENEMY_MISSILE_INTERVAL_MAX - ENEMY_MISSILE_INTERVAL_MAX) + ENEMY_MISSILE_INTERVAL_MIN;
-        enemyMissileElapsedTime = 0.0f;
+                auto missile = Sprite::create("missile.png");   // possibly use different missile image for enemy
+                missile->setPosition(enemy->getPositionX(), enemy->getPositionY() - enemy->getSize().height/2 - missile->getBoundingBox().size.height/2);
+                this->addChild(missile, 2);
+
+                enemyMissiles.push_back(missile);
+            }
+        }
     }
 }
 
 void GameScene::checkCollision()
 {
-    if (enemy->isAlive() && missile->isVisible() && missile->getBoundingBox().intersectsRect(enemy->getBoundingBox()))
+    for (int i = 0; i < ENEMY_ROW_COUNT; ++i)
     {
-        missile->setVisible(false);
-        enemy->setAlive(false);
+        for (int j = 0; j < ENEMY_COL_COUNT; ++j)
+        {
+            auto enemy = enemies[i][j];
+            if (enemy->isAlive() && missile->isVisible() && missile->getBoundingBox().intersectsRect(enemy->getBoundingBox()))
+            {
+                missile->setVisible(false);
+                enemy->setAlive(false);
+            }
+
+            if (!missile->isVisible())
+                break;
+        }
     }
 
     for (auto it = enemyMissiles.begin(); it != enemyMissiles.end(); )

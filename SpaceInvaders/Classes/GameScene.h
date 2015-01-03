@@ -8,8 +8,9 @@ static const float PLAYER_SPEED = 300.0f;
 static const float MISSILE_SPEED = 600.0f;
 
 static const float ENEMY_MOVE_INTERVAL = 0.5f;
-static const float ENEMY_MISSILE_INTERVAL_MAX = 0.5f;
-static const float ENEMY_MISSILE_INTERVAL_MIN = 0.3f;
+
+static const int ENEMY_ROW_COUNT = 5;
+static const int ENEMY_COL_COUNT = 9;   // should be 11.
 
 class GameScene : public cocos2d::Layer
 {
@@ -46,12 +47,11 @@ public:
 
     cocos2d::Sprite *player;
     cocos2d::Sprite *missile;
-    Enemy *enemy;
+
+    Enemy *enemies[ENEMY_ROW_COUNT][ENEMY_COL_COUNT];
 
     float enemyDeltaX;
     float enemyMoveElapsedTime;
-    float enemyNextMissileTimeInterval; // probably needs to have enemy class to hold all these values for each enemy
-    float enemyMissileElapsedTime;
     std::vector<cocos2d::Sprite*> enemyMissiles;
 };
 

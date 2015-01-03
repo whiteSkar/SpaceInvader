@@ -33,6 +33,9 @@ bool Enemy::initWithSprites(Sprite *sprite, Sprite *sprite2)
          _isAlive = true;
          this->setVisible(true);
 
+         missileShootElapsedTime = 0.0f;
+         nextMissileTimeInterval = rand() * (ENEMY_MISSILE_INTERVAL_MAX - ENEMY_MISSILE_INTERVAL_MAX) + ENEMY_MISSILE_INTERVAL_MIN;
+
         result = true;
     }
     else
@@ -80,6 +83,27 @@ void Enemy::animateToNextFrame()
         _sprite->setVisible(true);
         _sprite2->setVisible(false);
     }
+}
+
+void Enemy::shootMissile()
+{
+    missileShootElapsedTime = 0.0f;
+    nextMissileTimeInterval = rand() * (ENEMY_MISSILE_INTERVAL_MAX - ENEMY_MISSILE_INTERVAL_MAX) + ENEMY_MISSILE_INTERVAL_MIN;
+}
+
+void Enemy::increaseMissileShootElapsedTime(float dt)
+{
+    missileShootElapsedTime += dt;
+}
+
+float Enemy::getMissileShootElapsedTime()
+{
+    return missileShootElapsedTime;
+}
+
+float Enemy::getNextMissileTimeInterval()
+{
+    return nextMissileTimeInterval;
 }
 
 //void Enemy::draw (Renderer* renderer, const kmMat4& transform, bool transformUpdated)
