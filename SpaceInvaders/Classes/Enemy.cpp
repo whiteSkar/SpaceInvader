@@ -33,8 +33,9 @@ bool Enemy::initWithSprites(Sprite *sprite, Sprite *sprite2)
         _isAlive = true;
         this->setVisible(true);
 
-        missileShootElapsedTime = 0.0f;
-        nextMissileTimeInterval = ((float) (rand() % ((ENEMY_MISSILE_INTERVAL_MAX - ENEMY_MISSILE_INTERVAL_MIN) * 10))) / 10.0f + ENEMY_MISSILE_INTERVAL_MIN; // duplicate code
+        _missileShootElapsedTime = 0.0f;
+        _nextMissileTimeInterval = ((float) (rand() % ((ENEMY_MISSILE_INTERVAL_MAX - ENEMY_MISSILE_INTERVAL_MIN) * 10))) / 10.0f + ENEMY_MISSILE_INTERVAL_MIN; // duplicate code
+        _isAtFrontLine = false;
 
         _missile = Sprite::create("missile.png");   // possibly use different missile image for enemy
         _missile->setVisible(false);
@@ -56,11 +57,15 @@ void Enemy::update(float dt)
 {
     if (!this->isAlive()) return;
 
-    missileShootElapsedTime += dt;
-    if (missileShootElapsedTime >= nextMissileTimeInterval && !_missile->isVisible())
+    if (_isAtFrontLine)
     {
-        missileShootElapsedTime = 0.0f;
-        nextMissileTimeInterval = ((float) (rand() % ((ENEMY_MISSILE_INTERVAL_MAX - ENEMY_MISSILE_INTERVAL_MIN) * 10))) / 10.0f + ENEMY_MISSILE_INTERVAL_MIN;
+        _missileShootElapsedTime += dt;
+    }
+
+    if (_missileShootElapsedTime >= _nextMissileTimeInterval && !_missile->isVisible() && _isAtFrontLine)
+    {
+        _missileShootElapsedTime = 0.0f;
+        _nextMissileTimeInterval = ((float) (rand() % ((ENEMY_MISSILE_INTERVAL_MAX - ENEMY_MISSILE_INTERVAL_MIN) * 10))) / 10.0f + ENEMY_MISSILE_INTERVAL_MIN;
 
         _missile->setPosition(Point(0, 0 - this->getSize().height/2 - _missile->getBoundingBox().size.height/2));
         _missile->setVisible(true);
@@ -108,6 +113,12 @@ void Enemy::setAlive(bool isAlive)
 {
     _isAlive = isAlive;
     Node::setVisible(isAlive);
+    _isAtFrontLine = false;
+}
+
+void Enemy::setAtFrontLine(bool isAtFrontLine)
+{
+    _isAtFrontLine = isAtFrontLine;
 }
 
 void Enemy::animateToNextFrame()

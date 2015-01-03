@@ -75,6 +75,11 @@ bool GameScene::init()
             auto enemySprite = Sprite::create("enemy_large.png");
             auto enemySprite2 = Sprite::create("enemy_large2.png");
             auto enemy = Enemy::create(enemySprite, enemySprite2);
+
+            if (i == ENEMY_ROW_COUNT - 1)
+            {
+                enemy->setAtFrontLine(true);
+            }
             
             // Fix so that the the right most and left most enemy do not go beyond the screen edge
             auto enemySize = enemy->getSize();
@@ -189,6 +194,16 @@ void GameScene::checkCollision()
             {
                 missile->setVisible(false);
                 enemy->setAlive(false);
+
+                for (int k = ENEMY_ROW_COUNT - 1; k >= 0; --k)
+                {
+                    auto frontLineEnemy = enemies[k][j];
+                    if (frontLineEnemy->isAlive())
+                    {
+                        frontLineEnemy->setAtFrontLine(true);
+                        break;
+                    }
+                }
             }
 
             auto enemyMissile = enemy->getMissile();

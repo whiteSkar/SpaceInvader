@@ -29,6 +29,8 @@ public:
     bool isAlive();
     void setAlive(bool isAlive);
 
+    void setAtFrontLine(bool isAtFrontLine);
+
     void animateToNextFrame();
 
 private:
@@ -37,10 +39,11 @@ private:
 
     cocos2d::Sprite *_missile;
 
-    float missileShootElapsedTime;
-    float nextMissileTimeInterval;
+    float _missileShootElapsedTime;
+    float _nextMissileTimeInterval;
     
     bool _isAlive;
+    bool _isAtFrontLine;
 };
 
 #endif
