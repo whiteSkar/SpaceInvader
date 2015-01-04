@@ -12,6 +12,14 @@ static const float ENEMY_MOVE_INTERVAL = 0.5f;
 static const int ENEMY_ROW_COUNT = 5;
 static const int ENEMY_COL_COUNT = 9;   // should be 11.
 
+enum GameState
+{
+    NOT_INITIALIZED,
+    INITIALIZED,
+    PLAYING,
+    OVER
+};
+
 class GameScene : public cocos2d::Layer
 {
 public:
@@ -36,6 +44,8 @@ public:
     void updateEnemy(float dt);
 
     void checkCollision();
+
+    GameState gameState;
     
     bool isTouchDown;
 	cocos2d::Point currentTouchPos;
@@ -52,6 +62,8 @@ public:
     float enemyDeltaX;
     float enemyDeltaY;
     float enemyMoveElapsedTime;
+
+    int aliveEnemyCount;
 };
 
 #endif // __GAME_SCENE_H__

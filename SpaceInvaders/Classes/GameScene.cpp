@@ -31,11 +31,13 @@ bool GameScene::init()
     visibleOrigin = Director::getInstance()->getVisibleOrigin();
 
     srand(time(NULL));
-
+    
+    gameState = NOT_INITIALIZED;
     isEnemyMoveDownPending = false;
     enemyMoveElapsedTime = 0;    
     enemyDeltaX = visibleSize.width * 0.7 / 40;   // 40 movments from side to side  // doesn't seem like it's actually 40 times? investigate later
     enemyDeltaY = 50;   //temp
+    aliveEnemyCount = ENEMY_ROW_COUNT * ENEMY_COL_COUNT;
 
     /////////////////////////////
     // 2. add a menu item with "X" image, which is clicked to quit the program
@@ -107,6 +109,7 @@ bool GameScene::init()
 	
 	Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(touchListener, this);
 
+    gameState = INITIALIZED;    // better way to change gamestate to playing
     this->scheduleUpdate();
     
     return true;
@@ -114,6 +117,8 @@ bool GameScene::init()
 
 void GameScene::update(float dt)
 {
+    if (gameState == OVER) return;
+
     updateEnemy(dt);
 
     if (missile->isVisible())
@@ -216,6 +221,13 @@ void GameScene::checkCollision()
             {
                 missile->setVisible(false);
                 enemy->setAlive(false);
+
+                aliveEnemyCount--;
+                if (aliveEnemyCount <= 0)
+                {
+                    gameState = OVER;
+                }
+
 
                 for (int k = ENEMY_ROW_COUNT - 1; k >= 0; --k)
                 {
