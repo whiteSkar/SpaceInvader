@@ -32,8 +32,10 @@ bool GameScene::init()
 
     srand(time(NULL));
 
+    isEnemyMoveDownPending = false;
     enemyMoveElapsedTime = 0;    
     enemyDeltaX = visibleSize.width * 0.7 / 40;   // 40 movments from side to side  // doesn't seem like it's actually 40 times? investigate later
+    enemyDeltaY = 50;   //temp
 
     /////////////////////////////
     // 2. add a menu item with "X" image, which is clicked to quit the program
@@ -155,26 +157,46 @@ void GameScene::updateEnemy(float dt)
         Enemy *rightMostEnemy = nullptr;
         Enemy *leftMostEnemy = nullptr;
 
-        for (int i = 0; i < ENEMY_ROW_COUNT; ++i)
+        if (isEnemyMoveDownPending)
         {
-            for (int j = 0; j < ENEMY_COL_COUNT; ++j)
+            for (int i = 0; i < ENEMY_ROW_COUNT; ++i)
             {
-                auto enemy = enemies[i][j];
-                if (!enemy->isAlive()) continue;
+                for (int j = 0; j < ENEMY_COL_COUNT; ++j)
+                {
+                    auto enemy = enemies[i][j];
+                    if (!enemy->isAlive()) continue;
 
-                enemy->setPositionX(enemy->getPositionX() + enemyDeltaX);
-                enemy->animateToNextFrame();
-
-                rightMostEnemy = enemy;
-                if (!leftMostEnemy)
-                    leftMostEnemy = enemy;
+                    enemy->setPositionY(enemy->getPositionY() - enemyDeltaY);
+                    enemy->animateToNextFrame();
+                }
             }
-        }
 
-        if (rightMostEnemy->getPositionX() + rightMostEnemy->getSize().width/2 >= visibleOrigin.x + visibleSize.width ||
-            leftMostEnemy->getPositionX() - leftMostEnemy->getSize().width/2 <= visibleOrigin.x)
+            isEnemyMoveDownPending = false;
+        }
+        else
         {
-            enemyDeltaX *= -1;
+            for (int i = 0; i < ENEMY_ROW_COUNT; ++i)
+            {
+                for (int j = 0; j < ENEMY_COL_COUNT; ++j)
+                {
+                    auto enemy = enemies[i][j];
+                    if (!enemy->isAlive()) continue;
+
+                    enemy->setPositionX(enemy->getPositionX() + enemyDeltaX);
+                    enemy->animateToNextFrame();
+
+                    rightMostEnemy = enemy;
+                    if (!leftMostEnemy)
+                        leftMostEnemy = enemy;
+                }
+            }
+
+            if (rightMostEnemy->getPositionX() + rightMostEnemy->getSize().width/2 >= visibleOrigin.x + visibleSize.width ||
+                leftMostEnemy->getPositionX() - leftMostEnemy->getSize().width/2 <= visibleOrigin.x)
+            {
+                enemyDeltaX *= -1;
+                isEnemyMoveDownPending = true;
+            }
         }
 
         enemyMoveElapsedTime -= ENEMY_MOVE_INTERVAL;

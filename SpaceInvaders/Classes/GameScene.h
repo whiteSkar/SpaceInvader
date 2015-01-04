@@ -48,7 +48,9 @@ public:
 
     Enemy *enemies[ENEMY_ROW_COUNT][ENEMY_COL_COUNT];
 
+    bool isEnemyMoveDownPending;
     float enemyDeltaX;
+    float enemyDeltaY;
     float enemyMoveElapsedTime;
 };
 
