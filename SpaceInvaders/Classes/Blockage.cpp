@@ -19,6 +19,8 @@ bool Blockage::initWithFrames(std::vector<Sprite*> frames)
     bool result;
     if (AnimatableObject::initWithFrames(frames))
     {
+        health = frames.size();
+
         result = true;
     }
     else
@@ -27,4 +29,18 @@ bool Blockage::initWithFrames(std::vector<Sprite*> frames)
     }
 
     return result;
+}
+
+void Blockage::onHit()
+{
+    if (_isAlive)
+    {
+        health--;
+        animateToNextFrame();
+
+        if (health <= 0)
+        {
+            _isAlive = false;
+        }
+    }
 }

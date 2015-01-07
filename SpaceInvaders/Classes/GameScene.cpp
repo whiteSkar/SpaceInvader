@@ -256,6 +256,7 @@ void GameScene::updateEnemy(float dt)
     }
 }
 
+// Needs a better way to check collision. This is not a good way
 void GameScene::checkCollision()
 {
     for (int i = 0; i < ENEMY_ROW_COUNT; ++i)
@@ -276,7 +277,6 @@ void GameScene::checkCollision()
                     gameState = OVER;
                 }
 
-
                 for (int k = ENEMY_ROW_COUNT - 1; k >= 0; --k)
                 {
                     auto frontLineEnemy = enemies[k][j];
@@ -288,8 +288,8 @@ void GameScene::checkCollision()
                 }
             }
 
-            auto enemyMissile = enemy->getMissile();
-            if (enemyMissile->isVisible() && enemyMissile->getBoundingBox().intersectsRect(player->getBoundingBox()))
+            auto enemyMissileBox = enemy->getMissileBoundingBox();
+            if (enemy->isMissileVisible() && enemyMissileBox.intersectsRect(player->getBoundingBox()))
             {
                 enemy->missileHit();
             }
@@ -297,22 +297,35 @@ void GameScene::checkCollision()
             for (int k = 0; k < NUMBER_OF_BLOCKAGES; ++k)
             {
                 auto blockage = blockages[k];
-                auto wholeNode = blockage->getParent();
+                if (!blockage->isAlive()) continue;
 
                 auto blockageBox = blockage->getBoundingBox();
-                blockageBox.origin = wholeNode->getPosition();  // what is the best way to get the bounding box of a childe of a node? Do I have to add the parent node's origin?
 
-                if (enemyMissile->isVisible() && enemyMissile->getBoundingBox().intersectsRect(blockageBox))
+                if (enemy->isMissileVisible() && enemyMissileBox.intersectsRect(blockageBox))
                 {
                     enemy->missileHit();
-                    blockages[k]->animateToNextFrame(); // possibly make onHit() in the base class
+                    blockages[k]->onHit();
                 }
             }
 
-            if (enemyMissile->getPositionY() + enemy->getPositionY() + enemyMissile->getBoundingBox().size.height/2 < visibleOrigin.y)
+            if (enemyMissileBox.origin.y + enemyMissileBox.size.height/2 < visibleOrigin.y)
             {
                 enemy->missileOutOfBound();
             }
+        }
+    }
+
+    for (int k = 0; k < NUMBER_OF_BLOCKAGES; ++k)
+    {
+        auto blockage = blockages[k];
+        if (!blockage->isAlive()) continue;
+
+        auto blockageBox = blockage->getBoundingBox();
+
+        if (missile->isVisible() && missile->getBoundingBox().intersectsRect(blockageBox))
+        {
+            missile->setVisible(false);
+            blockages[k]->onHit();
         }
     }
 }

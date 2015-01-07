@@ -15,13 +15,17 @@ public:
 
     void setRepeat();
 
+    virtual bool isAlive();
+    virtual void setAlive(bool isAlive);
+
     void animateToNextFrame();
 
-private:
+protected:
     std::vector<cocos2d::Sprite*> _frames;
     std::vector<cocos2d::Sprite*>::iterator _frameIterator;
 
     bool _isRepeat;
+    bool _isAlive;
 };
 
 #endif

@@ -22,6 +22,7 @@ bool AnimatableObject::initWithFrames(std::vector<Sprite*> frames)
         _frames = frames;
         _frameIterator = _frames.begin();
         _isRepeat = false;
+        _isAlive = true;
         
         for (auto it = _frames.begin(); it != _frames.end(); ++it)
         {
@@ -57,7 +58,7 @@ Rect AnimatableObject::getBoundingBox()
     }
 
     auto box = _frames.front()->getBoundingBox();
-    box.origin = Point(Node::getPositionX() - box.size.width/2, Node::getPositionY() - box.size.height/2);
+    box.origin = this->convertToWorldSpace(box.origin);
     return box;
 }
 
@@ -76,15 +77,26 @@ void AnimatableObject::setRepeat()
     _isRepeat = true;
 }
 
+bool AnimatableObject::isAlive()
+{
+    return _isAlive;
+}
+
+void AnimatableObject::setAlive(bool isAlive)
+{
+    _isAlive = isAlive;
+    Node::setVisible(isAlive);  // missile also gets invisible. Find a way to fix this
+}
+
 void AnimatableObject::animateToNextFrame()
 {
     if (_frames.empty()) return;
 
-    auto curFrame = *_frameIterator;
-    Sprite *nextFrame = nullptr;
-
     if (_frameIterator != _frames.end())
     {
+        auto curFrame = *_frameIterator;
+        Sprite *nextFrame = nullptr;
+
         _frameIterator++;
         if (_frameIterator != _frames.end())
         {
@@ -100,6 +112,7 @@ void AnimatableObject::animateToNextFrame()
         }
 
         curFrame->setVisible(false);
-        nextFrame->setVisible(true);
+        if (nextFrame)
+            nextFrame->setVisible(true);
     }
 }

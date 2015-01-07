@@ -19,8 +19,6 @@ bool Enemy::initWithFrames(std::vector<Sprite*> frames)
     bool result;
     if (AnimatableObject::initWithFrames(frames))
     {
-        _isAlive = true;
-
         _missileShootElapsedTime = 0.0f;
         _nextMissileTimeInterval = ((float) (rand() % ((ENEMY_MISSILE_INTERVAL_MAX - ENEMY_MISSILE_INTERVAL_MIN) * 10))) / 10.0f + ENEMY_MISSILE_INTERVAL_MIN; // duplicate code
         _isAtFrontLine = false;
@@ -65,9 +63,16 @@ void Enemy::update(float dt)
     }
 }
 
-Sprite *Enemy::getMissile()
+Rect Enemy::getMissileBoundingBox()
 {
-    return _missile;
+    auto box = _missile->getBoundingBox();
+    box.origin = this->convertToWorldSpace(box.origin);
+    return box;
+}
+
+bool Enemy::isMissileVisible()
+{
+    return _missile->isVisible();
 }
 
 void Enemy::missileHit()
@@ -80,15 +85,9 @@ void Enemy::missileOutOfBound()
     _missile->setVisible(false);
 }
 
-bool Enemy::isAlive()
-{
-    return _isAlive;
-}
-
 void Enemy::setAlive(bool isAlive)
 {
-    _isAlive = isAlive;
-    Node::setVisible(isAlive);  // missile also gets invisible. Find a way to fix this
+    AnimatableObject::setAlive(isAlive);
     _isAtFrontLine = false;
 }
 

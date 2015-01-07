@@ -9,6 +9,11 @@ public:
     static Blockage* create(std::vector<cocos2d::Sprite*> frames);
     
     bool initWithFrames(std::vector<cocos2d::Sprite*> frames);
+
+    void onHit();
+
+private:
+    int health;
 };
 
 #endif

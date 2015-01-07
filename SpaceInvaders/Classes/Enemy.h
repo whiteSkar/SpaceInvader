@@ -3,8 +3,8 @@
 
 #include "AnimatableObject.h"
 
-static const int ENEMY_MISSILE_INTERVAL_MAX = 7;
-static const int ENEMY_MISSILE_INTERVAL_MIN = 3;
+static const int ENEMY_MISSILE_INTERVAL_MAX = 3;
+static const int ENEMY_MISSILE_INTERVAL_MIN = 1;
 
 static const float MISSILE_SPEED = 600.0f;
 
@@ -19,11 +19,11 @@ public:
 
     void update(float dt);
 
-    cocos2d::Sprite* getMissile();  // I don't like this method. What is the best way to check collision between this missile and the player?
+    cocos2d::Rect getMissileBoundingBox();  // I don't like this method. What is the best way to check collision between this missile and the player?
+    bool isMissileVisible();
     void missileHit();
     void missileOutOfBound();
 
-    bool isAlive();
     void setAlive(bool isAlive);
 
     void setAtFrontLine(bool isAtFrontLine);
@@ -33,8 +33,7 @@ private:
 
     float _missileShootElapsedTime;
     float _nextMissileTimeInterval;
-    
-    bool _isAlive;
+
     bool _isAtFrontLine;
 };
 
