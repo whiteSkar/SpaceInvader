@@ -180,9 +180,9 @@ void GameScene::updateEnemy(float dt)
         }
         else
         {
-            for (int i = 0; i < ENEMY_ROW_COUNT; ++i)
+            for (int j = 0; j < ENEMY_COL_COUNT; ++j)
             {
-                for (int j = 0; j < ENEMY_COL_COUNT; ++j)
+                for (int i = 0; i < ENEMY_ROW_COUNT; ++i)
                 {
                     auto enemy = enemies[i][j];
                     if (!enemy->isAlive()) continue;
