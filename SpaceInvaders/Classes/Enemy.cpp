@@ -2,36 +2,24 @@
 
 USING_NS_CC;
 
-Enemy* Enemy::create(Sprite *sprite, Sprite *sprite2)
+Enemy* Enemy::create(std::vector<Sprite*> frames)
 {
-    Enemy *enemy = new Enemy();
-    if (enemy && enemy->initWithSprites(sprite, sprite2))
+    Enemy *object = new Enemy();
+    if (object && object->initWithFrames(frames))
     {
-        enemy->autorelease();
-        return enemy;
+        object->autorelease();
+        return object;
     }
-    CC_SAFE_DELETE(enemy);
+    CC_SAFE_DELETE(object);
     return nullptr;
 }
 
-bool Enemy::initWithSprites(Sprite *sprite, Sprite *sprite2)
+bool Enemy::initWithFrames(std::vector<Sprite*> frames)
 {
     bool result;
-    if (Node::init())
+    if (AnimatableObject::initWithFrames(frames))
     {
-        _sprite = sprite;
-        _sprite->setVisible(true);
-        _sprite2 = sprite2;
-        _sprite2->setVisible(false);
-
-        _sprite->setPosition(Point::ZERO);
-        _sprite2->setPosition(Point::ZERO);
-
-        this->addChild(sprite);
-        this->addChild(sprite2);
-
         _isAlive = true;
-        this->setVisible(true);
 
         _missileShootElapsedTime = 0.0f;
         _nextMissileTimeInterval = ((float) (rand() % ((ENEMY_MISSILE_INTERVAL_MAX - ENEMY_MISSILE_INTERVAL_MIN) * 10))) / 10.0f + ENEMY_MISSILE_INTERVAL_MIN; // duplicate code
@@ -92,18 +80,6 @@ void Enemy::missileOutOfBound()
     _missile->setVisible(false);
 }
 
-Rect Enemy::getBoundingBox()
-{
-    auto box = _sprite->getBoundingBox();
-    box.origin = Point(Node::getPositionX() - box.size.width/2, Node::getPositionY() - box.size.height/2);
-    return box;
-}
-
-Size Enemy::getSize()
-{
-    return _sprite->getBoundingBox().size;
-}
-
 bool Enemy::isAlive()
 {
     return _isAlive;
@@ -119,22 +95,6 @@ void Enemy::setAlive(bool isAlive)
 void Enemy::setAtFrontLine(bool isAtFrontLine)
 {
     _isAtFrontLine = isAtFrontLine;
-}
-
-void Enemy::animateToNextFrame()
-{
-    if (!_isAlive) return;
-    
-    if (_sprite->isVisible())
-    {
-        _sprite2->setVisible(true);
-        _sprite->setVisible(false);
-    }
-    else
-    {
-        _sprite->setVisible(true);
-        _sprite2->setVisible(false);
-    }
 }
 
 //void Enemy::draw (Renderer* renderer, const kmMat4& transform, bool transformUpdated)

@@ -76,9 +76,11 @@ bool GameScene::init()
     {
         for (int j = 0; j < ENEMY_COL_COUNT; ++j)
         {
-            auto enemySprite = Sprite::create("enemy_large.png");
-            auto enemySprite2 = Sprite::create("enemy_large2.png");
-            auto enemy = Enemy::create(enemySprite, enemySprite2);
+            std::vector<Sprite*> frames;
+            frames.push_back(Sprite::create("enemy_large.png"));
+            frames.push_back(Sprite::create("enemy_large2.png"));
+            auto enemy = Enemy::create(frames);
+            enemy->setRepeat();
 
             if (i == ENEMY_ROW_COUNT - 1)
             {

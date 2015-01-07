@@ -1,22 +1,19 @@
 #ifndef __ENEMY_H__
 #define __ENEMY_H__
 
-#include "cocos2d.h"
+#include "AnimatableObject.h"
 
 static const int ENEMY_MISSILE_INTERVAL_MAX = 7;
 static const int ENEMY_MISSILE_INTERVAL_MIN = 3;
 
 static const float MISSILE_SPEED = 600.0f;
 
-class Enemy : public cocos2d::Node
+class Enemy : public AnimatableObject
 {
 public:
-    static Enemy* create(cocos2d::Sprite *sprite, cocos2d::Sprite *sprite2); // only need two sprites. This way suffices
-
-    bool initWithSprites(cocos2d::Sprite *sprite, cocos2d::Sprite *sprite2);
-
-    cocos2d::Rect getBoundingBox();
-    cocos2d::Size getSize();
+    static Enemy* create(std::vector<cocos2d::Sprite*> frames);
+    
+    bool initWithFrames(std::vector<cocos2d::Sprite*> frames);
 
     //virtual void draw (cocos2d::Renderer* renderer, const kmMat4& transform, bool transformUpdated);    // debugging purpose
 
@@ -31,12 +28,7 @@ public:
 
     void setAtFrontLine(bool isAtFrontLine);
 
-    void animateToNextFrame();
-
 private:
-    cocos2d::Sprite *_sprite;
-    cocos2d::Sprite *_sprite2;
-
     cocos2d::Sprite *_missile;
 
     float _missileShootElapsedTime;
