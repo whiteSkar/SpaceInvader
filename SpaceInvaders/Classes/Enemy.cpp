@@ -55,7 +55,7 @@ void Enemy::update(float dt)
         _missileShootElapsedTime = 0.0f;
         _nextMissileTimeInterval = ((float) (rand() % ((ENEMY_MISSILE_INTERVAL_MAX - ENEMY_MISSILE_INTERVAL_MIN) * 10))) / 10.0f + ENEMY_MISSILE_INTERVAL_MIN;
 
-        _missile->setPosition(Point(0, 0 - this->getSize().height/2 - _missile->getBoundingBox().size.height/2));
+        _missile->setPosition(Point(0, 0 - this->getSize().height/2 - _missile->getBoundingBox().size.height/2));   // missile moves sideways along with the enemy... Fix this
         _missile->setVisible(true);
     }
 
@@ -88,7 +88,7 @@ bool Enemy::isAlive()
 void Enemy::setAlive(bool isAlive)
 {
     _isAlive = isAlive;
-    Node::setVisible(isAlive);
+    Node::setVisible(isAlive);  // missile also gets invisible. Find a way to fix this
     _isAtFrontLine = false;
 }
 

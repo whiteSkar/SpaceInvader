@@ -79,6 +79,7 @@ bool GameScene::init()
             std::vector<Sprite*> frames;
             frames.push_back(Sprite::create("enemy_large.png"));
             frames.push_back(Sprite::create("enemy_large2.png"));
+
             auto enemy = Enemy::create(frames);
             enemy->setRepeat();
 
@@ -92,10 +93,55 @@ bool GameScene::init()
             auto widthBetweenEnemies = (visibleSize.width * 0.7f - (enemySize.width * ENEMY_COL_COUNT)) / (ENEMY_COL_COUNT - 1);    // temporarily for height too
             enemy->setPosition(Point(visibleOrigin.x + visibleSize.width * 0.15f + enemySize.width/2 + enemySize.width * j + widthBetweenEnemies * j,  // magic number
                                visibleOrigin.y + visibleSize.height * 0.9f - enemySize.height/2 - enemySize.height * i - widthBetweenEnemies * i));
-            this->addChild(enemy, 1);
 
+            this->addChild(enemy, 1);
             enemies[i][j] = enemy;
         }
+    }
+
+    auto temporarySpriteForMeasuringSize = Sprite::create("blockage_0_hit.png");
+
+    int numberOfBlockagesInARow = 4;
+    auto wholeBlockWidth = temporarySpriteForMeasuringSize->getBoundingBox().size.width * numberOfBlockagesInARow;
+    auto widthBetweenWholeBlocks = (visibleSize.width - wholeBlockWidth * NUMBER_OF_WHOLE_BLOCKS) / (NUMBER_OF_WHOLE_BLOCKS + 1);
+
+    auto yPosOfBlock = visibleOrigin.y + visibleSize.height * 0.3;    // temporary
+
+    Position blockagePositions[NUMBER_OF_BLOCKAGES_IN_A_WHOLE_BLOCK];
+    blockagePositions[0] = Position(-1.5f, -1.5f);
+    blockagePositions[1] = Position(-1.5f, -0.5f);
+    blockagePositions[2] = Position(-1.5f, 0.5f);
+    blockagePositions[3] = Position(-0.5f, -0.5f);
+    blockagePositions[4] = Position(-0.5f, 0.5f);
+    blockagePositions[5] = Position(0.5f, -0.5f);
+    blockagePositions[6] = Position(0.5f, 0.5f);
+    blockagePositions[7] = Position(1.5f, -1.5f);
+    blockagePositions[8] = Position(1.5f, -0.5f);
+    blockagePositions[9] = Position(1.5f, 0.5f);
+
+    for (int i = 0 ; i < NUMBER_OF_WHOLE_BLOCKS; ++i)
+    {
+        auto wholeBlockNode = Node::create();
+        wholeBlockNode->setVisible(true);
+        wholeBlockNode->setPosition(Point(visibleOrigin.x + widthBetweenWholeBlocks * (1 + 2 * i), yPosOfBlock));
+
+        for (int j = 0; j < NUMBER_OF_BLOCKAGES_IN_A_WHOLE_BLOCK; ++j)
+        {
+            std::vector<Sprite*> frames;
+            frames.push_back(Sprite::create("blockage_0_hit.png"));
+            frames.push_back(Sprite::create("blockage_1_hit.png"));
+            frames.push_back(Sprite::create("blockage_2_hit.png"));
+            frames.push_back(Sprite::create("blockage_3_hit.png"));
+
+            auto position = blockagePositions[j];
+
+            auto blockage = Blockage::create(frames);
+            wholeBlockNode->addChild(blockage);
+            blockage->setPosition(blockage->getBoundingBox().size.width * position.first, blockage->getBoundingBox().size.height * position.second);
+            blockages[i * NUMBER_OF_BLOCKAGES_IN_A_WHOLE_BLOCK + j] = blockage;
+        }
+
+        this->addChild(wholeBlockNode, 999);
     }
 
     isTouchDown = false;
@@ -246,6 +292,21 @@ void GameScene::checkCollision()
             if (enemyMissile->isVisible() && enemyMissile->getBoundingBox().intersectsRect(player->getBoundingBox()))
             {
                 enemy->missileHit();
+            }
+
+            for (int k = 0; k < NUMBER_OF_BLOCKAGES; ++k)
+            {
+                auto blockage = blockages[k];
+                auto wholeNode = blockage->getParent();
+
+                auto blockageBox = blockage->getBoundingBox();
+                blockageBox.origin = wholeNode->getPosition();  // what is the best way to get the bounding box of a childe of a node? Do I have to add the parent node's origin?
+
+                if (enemyMissile->isVisible() && enemyMissile->getBoundingBox().intersectsRect(blockageBox))
+                {
+                    enemy->missileHit();
+                    blockages[k]->animateToNextFrame(); // possibly make onHit() in the base class
+                }
             }
 
             if (enemyMissile->getPositionY() + enemy->getPositionY() + enemyMissile->getBoundingBox().size.height/2 < visibleOrigin.y)

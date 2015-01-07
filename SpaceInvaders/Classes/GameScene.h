@@ -3,6 +3,7 @@
 
 #include "cocos2d.h"
 #include "Enemy.h"
+#include "Blockage.h"
 
 static const float PLAYER_SPEED = 300.0f;
 static const float PLAYER_MISSILE_SPEED = 1000.0f;
@@ -11,6 +12,12 @@ static const float ENEMY_MOVE_INTERVAL = 0.5f;
 
 static const int ENEMY_ROW_COUNT = 5;
 static const int ENEMY_COL_COUNT = 9;   // should be 11.
+
+static const int NUMBER_OF_WHOLE_BLOCKS = 4;
+static const int NUMBER_OF_BLOCKAGES_IN_A_WHOLE_BLOCK = 10;
+static const int NUMBER_OF_BLOCKAGES = NUMBER_OF_WHOLE_BLOCKS * NUMBER_OF_BLOCKAGES_IN_A_WHOLE_BLOCK;
+
+typedef std::pair<float, float> Position;
 
 enum GameState
 {
@@ -57,6 +64,7 @@ public:
     cocos2d::Sprite *missile;
 
     Enemy *enemies[ENEMY_ROW_COUNT][ENEMY_COL_COUNT];
+    Blockage *blockages[NUMBER_OF_BLOCKAGES];
 
     bool isEnemyMoveDownPending;
     float enemyDeltaX;
