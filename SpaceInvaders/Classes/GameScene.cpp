@@ -38,6 +38,7 @@ bool GameScene::init()
     enemyDeltaX = visibleSize.width * 0.7 / 40;   // 40 movments from side to side  // doesn't seem like it's actually 40 times? investigate later
     enemyDeltaY = 50;   //temp
     aliveEnemyCount = ENEMY_ROW_COUNT * ENEMY_COL_COUNT;
+    enemyMoveInterval = ENEMY_MOVE_INTERVAL_DEFAULT;
 
     /////////////////////////////
     // 2. add a menu item with "X" image, which is clicked to quit the program
@@ -205,7 +206,7 @@ void GameScene::update(float dt)
 void GameScene::updateEnemy(float dt)
 {
     enemyMoveElapsedTime += dt;
-    if (enemyMoveElapsedTime >= ENEMY_MOVE_INTERVAL)
+    if (enemyMoveElapsedTime >= enemyMoveInterval)
     {
         Enemy *rightMostEnemy = nullptr;
         Enemy *leftMostEnemy = nullptr;
@@ -252,7 +253,7 @@ void GameScene::updateEnemy(float dt)
             }
         }
 
-        enemyMoveElapsedTime -= ENEMY_MOVE_INTERVAL;
+        enemyMoveElapsedTime -= enemyMoveInterval;
     }
 }
 
@@ -270,6 +271,7 @@ void GameScene::checkCollision()
             {
                 missile->setVisible(false);
                 enemy->setAlive(false);
+                enemyMoveInterval -= ENEMY_MOVE_INTERVAL_DELTA_PER_ENEMY_DEAD;
 
                 aliveEnemyCount--;
                 if (aliveEnemyCount <= 0)

@@ -8,10 +8,13 @@
 static const float PLAYER_SPEED = 300.0f;
 static const float PLAYER_MISSILE_SPEED = 1000.0f;
 
-static const float ENEMY_MOVE_INTERVAL = 0.5f;
-
 static const int ENEMY_ROW_COUNT = 5;
 static const int ENEMY_COL_COUNT = 9;   // should be 11.
+static const int NUMBER_OF_ENEMIES = ENEMY_ROW_COUNT * ENEMY_COL_COUNT;
+
+static const float ENEMY_MOVE_INTERVAL_DEFAULT = 0.5f;
+static const float ENEMY_MOVE_INTERVAL_MIN = 0.03f;
+static const float ENEMY_MOVE_INTERVAL_DELTA_PER_ENEMY_DEAD = (ENEMY_MOVE_INTERVAL_DEFAULT - ENEMY_MOVE_INTERVAL_MIN) / NUMBER_OF_ENEMIES;
 
 static const int NUMBER_OF_WHOLE_BLOCKS = 4;
 static const int NUMBER_OF_BLOCKAGES_IN_A_WHOLE_BLOCK = 10;
@@ -72,6 +75,8 @@ public:
     float enemyMoveElapsedTime;
 
     int aliveEnemyCount;
+
+    float enemyMoveInterval;
 };
 
 #endif // __GAME_SCENE_H__
