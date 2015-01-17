@@ -35,8 +35,7 @@ bool GameScene::init()
     gameState = NOT_INITIALIZED;
     isEnemyMoveDownPending = false;
     enemyMoveElapsedTime = 0;    
-    enemyDeltaX = visibleSize.width * 0.7 / 40;   // 40 movments from side to side  // doesn't seem like it's actually 40 times? investigate later
-    enemyDeltaY = 50;   //temp
+    enemyDeltaX = visibleSize.width * (1.0f - ENEMY_ARMY_WIDTH_PERCENTAGE_OF_SCREEN) / ENEMY_NUMBER_OF_MOVEMENTS_FROM_SIDE_TO_SIDE;
     aliveEnemyCount = ENEMY_ROW_COUNT * ENEMY_COL_COUNT;
     enemyMoveInterval = ENEMY_MOVE_INTERVAL_DEFAULT;
 
@@ -66,13 +65,14 @@ bool GameScene::init()
     this->addChild(label, 1);
 
     player = Sprite::create("player.png");
-    player->setPosition(Point(visibleOrigin.x + visibleSize.width / 2, visibleOrigin.y + visibleSize.height * 0.2f));
+    player->setPosition(Point(visibleOrigin.x + visibleSize.width / 2, visibleOrigin.y + visibleSize.height * PLAYER_Y_POS_PERCENTAGE_OF_SCREEN));
     this->addChild(player, 1);  // refactor z order
 
     missile = Sprite::create("missile.png");
     missile->setVisible(false);
     this->addChild(missile, 2);
 
+    enemyDeltaY = 0;
     for (int i = 0; i < ENEMY_ROW_COUNT; ++i)
     {
         for (int j = 0; j < ENEMY_COL_COUNT; ++j)
@@ -91,12 +91,17 @@ bool GameScene::init()
             
             // Fix so that the the right most and left most enemy do not go beyond the screen edge
             auto enemySize = enemy->getSize();
-            auto widthBetweenEnemies = (visibleSize.width * 0.7f - (enemySize.width * ENEMY_COL_COUNT)) / (ENEMY_COL_COUNT - 1);    // temporarily for height too
-            enemy->setPosition(Point(visibleOrigin.x + visibleSize.width * 0.15f + enemySize.width/2 + enemySize.width * j + widthBetweenEnemies * j,  // magic number
-                               visibleOrigin.y + visibleSize.height * 0.9f - enemySize.height/2 - enemySize.height * i - widthBetweenEnemies * i));
+            auto gapBetweenEnemies = (visibleSize.width * ENEMY_ARMY_WIDTH_PERCENTAGE_OF_SCREEN - (enemySize.width * ENEMY_COL_COUNT)) / (ENEMY_COL_COUNT - 1);   // do this once
+            enemy->setPosition(Point(visibleOrigin.x + visibleSize.width * ((1.0f - ENEMY_ARMY_WIDTH_PERCENTAGE_OF_SCREEN) / 2) + enemySize.width/2 + enemySize.width * j + gapBetweenEnemies * j,
+                               visibleOrigin.y + visibleSize.height * ENEMY_ARMY_Y_POS_PERCENTAGE_OF_SCREEN - enemySize.height/2 - enemySize.height * i - gapBetweenEnemies * i));
 
             this->addChild(enemy, 1);
             enemies[i][j] = enemy;
+
+            if (enemyDeltaY == 0)   // do this once
+            {
+                enemyDeltaY = (visibleSize.height * BATTLE_FIELD_HEIGHT_PERCENTAGE - (enemySize.height * ENEMY_ROW_COUNT + gapBetweenEnemies * (ENEMY_ROW_COUNT - 1))) / ENEMY_NUMBER_OF_MOVEMENTS_FROM_TOP_TO_BOTTOM;
+            }
         }
     }
 
@@ -106,7 +111,7 @@ bool GameScene::init()
     auto wholeBlockWidth = temporarySpriteForMeasuringSize->getBoundingBox().size.width * numberOfBlockagesInARow;
     auto widthBetweenWholeBlocks = (visibleSize.width - wholeBlockWidth * NUMBER_OF_WHOLE_BLOCKS) / (NUMBER_OF_WHOLE_BLOCKS + 1);
 
-    auto yPosOfBlock = visibleOrigin.y + visibleSize.height * 0.3;    // temporary
+    auto yPosOfBlock = visibleOrigin.y + visibleSize.height * BLOCKAGE_Y_POS_PERCENTAGE_OF_SCREEN;
 
     Position blockagePositions[NUMBER_OF_BLOCKAGES_IN_A_WHOLE_BLOCK];
     blockagePositions[0] = Position(-1.5f, -1.5f);
