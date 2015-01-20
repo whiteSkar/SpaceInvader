@@ -35,7 +35,9 @@ bool GameScene::init()
     gameState = NOT_INITIALIZED;
     isEnemyMoveDownPending = false;
     enemyMoveElapsedTime = 0;    
-    enemyDeltaX = visibleSize.width * (1.0f - ENEMY_ARMY_WIDTH_PERCENTAGE_OF_SCREEN) / ENEMY_NUMBER_OF_MOVEMENTS_FROM_SIDE_TO_SIDE;
+    enemyDeltaX = visibleSize.width * (1.0f - ENEMY_ARMY_WIDTH_PERCENTAGE_OF_SCREEN) / ENEMY_NUMBER_OF_MOVEMENTS_FROM_SIDE_TO_SIDE_FOR_ONE_MINUS_ENEMY_ARMY_WIDTH_PERCENTAGE_OF_SCREEN;
+    enemyGap = enemyDeltaX * ENEMY_GAP_PROPORTIONAL_TO_DELTA_X;
+    enemyExpectedWidth = enemyGap * ENEMY_WIDTH_PROPORTIONAL_TO_GAP;
     aliveEnemyCount = ENEMY_ROW_COUNT * ENEMY_COL_COUNT;
     enemyMoveInterval = ENEMY_MOVE_INTERVAL_DEFAULT;
 
@@ -78,8 +80,14 @@ bool GameScene::init()
         for (int j = 0; j < ENEMY_COL_COUNT; ++j)
         {
             std::vector<Sprite*> frames;
-            frames.push_back(Sprite::create("enemy_large.png"));
-            frames.push_back(Sprite::create("enemy_large2.png"));
+            auto sprite1 = Sprite::create("enemy_large.png");
+            auto sprite2 = Sprite::create("enemy_large2.png");
+
+            sprite1->setScale(enemyExpectedWidth / sprite1->getBoundingBox().size.width);
+            sprite2->setScale(enemyExpectedWidth / sprite2->getBoundingBox().size.width);
+
+            frames.push_back(sprite1);
+            frames.push_back(sprite2);
 
             auto enemy = Enemy::create(frames);
             enemy->setRepeat();
@@ -89,18 +97,16 @@ bool GameScene::init()
                 enemy->setAtFrontLine(true);
             }
             
-            // Fix so that the the right most and left most enemy do not go beyond the screen edge
             auto enemySize = enemy->getSize();
-            auto gapBetweenEnemies = (visibleSize.width * ENEMY_ARMY_WIDTH_PERCENTAGE_OF_SCREEN - (enemySize.width * ENEMY_COL_COUNT)) / (ENEMY_COL_COUNT - 1);   // do this once
-            enemy->setPosition(Point(visibleOrigin.x + visibleSize.width * ((1.0f - ENEMY_ARMY_WIDTH_PERCENTAGE_OF_SCREEN) / 2) + enemySize.width/2 + enemySize.width * j + gapBetweenEnemies * j,
-                               visibleOrigin.y + visibleSize.height * ENEMY_ARMY_Y_POS_PERCENTAGE_OF_SCREEN - enemySize.height/2 - enemySize.height * i - gapBetweenEnemies * i));
+            enemy->setPosition(Point(visibleOrigin.x + visibleSize.width * ((1.0f - ENEMY_ARMY_WIDTH_PERCENTAGE_OF_SCREEN) / 2) + enemySize.width/2 + enemySize.width * j + enemyGap * j,
+                               visibleOrigin.y + visibleSize.height * ENEMY_ARMY_Y_POS_PERCENTAGE_OF_SCREEN - enemySize.height/2 - enemySize.height * i - enemyGap * i));
 
             this->addChild(enemy, 1);
             enemies[i][j] = enemy;
 
-            if (enemyDeltaY == 0)   // do this once
+            if (enemyDeltaY == 0)
             {
-                enemyDeltaY = (visibleSize.height * BATTLE_FIELD_HEIGHT_PERCENTAGE - (enemySize.height * ENEMY_ROW_COUNT + gapBetweenEnemies * (ENEMY_ROW_COUNT - 1))) / ENEMY_NUMBER_OF_MOVEMENTS_FROM_TOP_TO_BOTTOM;
+                enemyDeltaY = (visibleSize.height * BATTLE_FIELD_HEIGHT_PERCENTAGE - (enemySize.height * ENEMY_ROW_COUNT + enemyGap * (ENEMY_ROW_COUNT - 1))) / ENEMY_NUMBER_OF_MOVEMENTS_FROM_TOP_TO_BOTTOM;
             }
         }
     }
@@ -250,8 +256,8 @@ void GameScene::updateEnemy(float dt)
                 }
             }
 
-            if (rightMostEnemy->getPositionX() + rightMostEnemy->getSize().width/2 >= visibleOrigin.x + visibleSize.width ||
-                leftMostEnemy->getPositionX() - leftMostEnemy->getSize().width/2 <= visibleOrigin.x)
+            if (std::ceil(rightMostEnemy->getPositionX() + rightMostEnemy->getSize().width/2) >= visibleOrigin.x + visibleSize.width ||
+                std::floor(leftMostEnemy->getPositionX() - leftMostEnemy->getSize().width/2) <= visibleOrigin.x)
             {
                 enemyDeltaX *= -1;
                 isEnemyMoveDownPending = true;
@@ -360,6 +366,18 @@ void GameScene::onTouchCancelled(Touch* touch, Event* event)
 	onTouchEnded(touch, event);
 }
 
+//void GameScene::draw(Renderer* renderer, const kmMat4& transform, bool transformUpdated)
+//{
+//    Node::draw(renderer, transform, transformUpdated);
+//    ccDrawColor4B(255, 0, 0, 255);
+//    ccDrawLine(Point(visibleOrigin.x + visibleSize.width * (1.0f - ENEMY_ARMY_WIDTH_PERCENTAGE_OF_SCREEN) / 2, 
+//                    visibleOrigin.y), Point(visibleOrigin.x + visibleSize.width * (1.0f - ENEMY_ARMY_WIDTH_PERCENTAGE_OF_SCREEN) / 2, visibleOrigin.y + visibleSize.height));
+//    ccDrawLine(Point((visibleOrigin.x + visibleSize.width * (1.0f - ENEMY_ARMY_WIDTH_PERCENTAGE_OF_SCREEN) / 2) + visibleSize.width * ENEMY_ARMY_WIDTH_PERCENTAGE_OF_SCREEN, 
+//                    visibleOrigin.y), Point((visibleOrigin.x + visibleSize.width * (1.0f - ENEMY_ARMY_WIDTH_PERCENTAGE_OF_SCREEN) / 2) + visibleSize.width * ENEMY_ARMY_WIDTH_PERCENTAGE_OF_SCREEN, visibleOrigin.y + visibleSize.height));
+//
+//    ccDrawLine(Point(visibleOrigin.x + 5, visibleOrigin.y), Point(visibleOrigin.x + 5, visibleOrigin.y + visibleSize.height));
+//    ccDrawLine(Point(visibleOrigin.x + visibleSize.width - 5, visibleOrigin.y), Point(visibleOrigin.x + visibleSize.width - 5, visibleOrigin.y + visibleSize.height));
+//}
 
 void GameScene::menuCloseCallback(Ref* pSender)
 {

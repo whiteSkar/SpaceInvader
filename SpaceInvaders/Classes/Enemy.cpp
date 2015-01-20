@@ -101,5 +101,5 @@ void Enemy::setAtFrontLine(bool isAtFrontLine)
 //    auto box = this->getBoundingBox();
 //    Node::draw(renderer, transform, transformUpdated);
 //    ccDrawColor4B(255, 0, 0, 255);
-//    ccDrawRect(Point::ZERO, Point(box.size.width,  box.size.height));
+//    ccDrawRect(Point(-box.size.width/2, -box.size.height/2), Point(box.size.width/2,  box.size.height/2));
 //}
