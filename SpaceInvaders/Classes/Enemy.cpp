@@ -27,8 +27,6 @@ bool Enemy::initWithFrames(std::vector<Sprite*> frames)
         _missile->setVisible(false);
         this->addChild(_missile);
 
-        this->scheduleUpdate();
-
         result = true;
     }
     else
@@ -41,6 +39,11 @@ bool Enemy::initWithFrames(std::vector<Sprite*> frames)
 
 void Enemy::update(float dt)
 {
+    if (_missile->isVisible())  // missile should keep going even if the enemy died
+    {
+        _missile->setPosition(this->convertToNodeSpace(Point(missileXPos, 0.0f)).x, _missile->getPositionY() - MISSILE_SPEED * dt); // hacky way to fix missile x position
+    }
+
     if (!this->isAlive()) return;
 
     if (_isAtFrontLine)
@@ -53,13 +56,9 @@ void Enemy::update(float dt)
         _missileShootElapsedTime = 0.0f;
         _nextMissileTimeInterval = ((float) (rand() % ((ENEMY_MISSILE_INTERVAL_MAX - ENEMY_MISSILE_INTERVAL_MIN) * 10))) / 10.0f + ENEMY_MISSILE_INTERVAL_MIN;
 
-        _missile->setPosition(Point(0, 0 - this->getSize().height/2 - _missile->getBoundingBox().size.height/2));   // missile moves sideways along with the enemy... Fix this
+        _missile->setPosition(Point(0, 0 - this->getSize().height/2 - _missile->getBoundingBox().size.height/2));
+        missileXPos = this->convertToWorldSpace(_missile->getPosition()).x;
         _missile->setVisible(true);
-    }
-
-    if (_missile->isVisible())
-    {
-        _missile->setPositionY(_missile->getPositionY() - MISSILE_SPEED * dt);
     }
 }
 
@@ -83,11 +82,22 @@ void Enemy::missileHit()
 void Enemy::missileOutOfBound()
 {
     _missile->setVisible(false);
+
+    if (!this->isAlive())
+    {
+        AnimatableObject::setAlive(false, true);    // need this to setAlive to the whole node after hacky way of applying setAlive to the frames only
+    }
 }
 
 void Enemy::setAlive(bool isAlive)
 {
-    AnimatableObject::setAlive(isAlive);
+    bool applyIsAliveToNode = true;
+    if (isMissileVisible())
+    {
+        applyIsAliveToNode = false;
+    }
+
+    AnimatableObject::setAlive(isAlive, applyIsAliveToNode);    // hacky way to apply setAlive to the frames only
     _isAtFrontLine = false;
 }
 

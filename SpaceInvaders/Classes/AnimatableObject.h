@@ -16,7 +16,7 @@ public:
     void setRepeat();
 
     virtual bool isAlive();
-    virtual void setAlive(bool isAlive);
+    virtual void setAlive(bool isAlive, bool isApplyToNode);
 
     void animateToNextFrame();
 

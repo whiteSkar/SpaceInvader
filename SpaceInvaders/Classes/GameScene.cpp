@@ -277,6 +277,15 @@ void GameScene::updateEnemy(float dt)
 
         enemyMoveElapsedTime -= enemyMoveInterval;
     }
+
+    for (int i = 0; i < ENEMY_ROW_COUNT; ++i)
+    {
+        for (int j = 0; j < ENEMY_COL_COUNT; ++j)
+        {
+            auto enemy = enemies[i][j];
+            enemy->update(dt);  // has to call this after moving the enemies for missile to fix position
+        }
+    }
 }
 
 // Needs a better way to check collision. This is not a good way
@@ -287,9 +296,8 @@ void GameScene::checkCollision()
         for (int j = 0; j < ENEMY_COL_COUNT; ++j)
         {
             auto enemy = enemies[i][j];
-            if (!enemy->isAlive()) continue;
 
-            if (missile->isVisible() && missile->getBoundingBox().intersectsRect(enemy->getBoundingBox()))
+            if (enemy->isAlive() && missile->isVisible() && missile->getBoundingBox().intersectsRect(enemy->getBoundingBox()))
             {
                 missile->setVisible(false);
                 setEnemyDead(enemy, j);

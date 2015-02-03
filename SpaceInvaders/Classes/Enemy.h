@@ -30,6 +30,7 @@ public:
 
 private:
     cocos2d::Sprite *_missile;
+    float missileXPos;
 
     float _missileShootElapsedTime;
     float _nextMissileTimeInterval;

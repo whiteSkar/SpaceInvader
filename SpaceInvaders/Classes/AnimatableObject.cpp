@@ -82,10 +82,22 @@ bool AnimatableObject::isAlive()
     return _isAlive;
 }
 
-void AnimatableObject::setAlive(bool isAlive)
+void AnimatableObject::setAlive(bool isAlive, bool isApplyToNode)   // hacky way to only set visible to the frames not the node itself
 {
     _isAlive = isAlive;
-    Node::setVisible(isAlive);  // missile also gets invisible. Find a way to fix this
+    
+    if (isApplyToNode)
+    {
+        Node::setVisible(isAlive);
+    }
+    else
+    {
+        for (int i = 0; i < _frames.size(); ++i)
+        {
+            auto frame = _frames[i];
+            frame->setVisible(isAlive);
+        }
+    }
 }
 
 void AnimatableObject::animateToNextFrame()
