@@ -32,8 +32,9 @@ bool GameScene::init()
 
     srand(time(NULL));
     
-    gameState = NOT_INITIALIZED;
+    setGameState(NOT_INITIALIZED);
     isEnemyMoveDownPending = false;
+    isEnemyBelowPlayer = false;
     enemyMoveElapsedTime = 0;    
     enemyDeltaX = visibleSize.width * (1.0f - ENEMY_ARMY_WIDTH_PERCENTAGE_OF_SCREEN) / ENEMY_NUMBER_OF_MOVEMENTS_FROM_SIDE_TO_SIDE_FOR_ONE_MINUS_ENEMY_ARMY_WIDTH_PERCENTAGE_OF_SCREEN;
     enemyGap = enemyDeltaX * ENEMY_GAP_PROPORTIONAL_TO_DELTA_X;
@@ -169,7 +170,7 @@ bool GameScene::init()
 	
 	Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(touchListener, this);
 
-    gameState = INITIALIZED;    // better way to change gamestate to playing
+    setGameState(INITIALIZED);   // better way to change gamestate to playing
     this->scheduleUpdate();
     
     return true;
@@ -180,6 +181,11 @@ void GameScene::update(float dt)
     if (gameState == OVER) return;
 
     updateEnemy(dt);
+
+    if (isEnemyBelowPlayer)
+    {
+        setGameState(OVER);
+    }
 
     if (missile->isVisible())
     {
@@ -233,6 +239,11 @@ void GameScene::updateEnemy(float dt)
 
                     enemy->setPositionY(enemy->getPositionY() - enemyDeltaY);
                     enemy->animateToNextFrame();
+
+                    if (enemy->getPositionY() < player->getPositionY())
+                    {
+                        isEnemyBelowPlayer = true;
+                    }
                 }
             }
 
@@ -276,35 +287,25 @@ void GameScene::checkCollision()
         for (int j = 0; j < ENEMY_COL_COUNT; ++j)
         {
             auto enemy = enemies[i][j];
-            if (!enemy->isVisible()) continue;
+            if (!enemy->isAlive()) continue;
 
             if (missile->isVisible() && missile->getBoundingBox().intersectsRect(enemy->getBoundingBox()))
             {
                 missile->setVisible(false);
-                enemy->setAlive(false);
-                enemyMoveInterval -= ENEMY_MOVE_INTERVAL_DELTA_PER_ENEMY_DEAD;
-
-                aliveEnemyCount--;
-                if (aliveEnemyCount <= 0)
-                {
-                    gameState = OVER;
-                }
-
-                for (int k = ENEMY_ROW_COUNT - 1; k >= 0; --k)
-                {
-                    auto frontLineEnemy = enemies[k][j];
-                    if (frontLineEnemy->isAlive())
-                    {
-                        frontLineEnemy->setAtFrontLine(true);
-                        break;
-                    }
-                }
+                setEnemyDead(enemy, j);
             }
 
             auto enemyMissileBox = enemy->getMissileBoundingBox();
             if (enemy->isMissileVisible() && enemyMissileBox.intersectsRect(player->getBoundingBox()))
             {
                 enemy->missileHit();
+                setPlayerDead();
+            }
+
+            if (enemy->isAlive() && player->isVisible() && enemy->getBoundingBox().intersectsRect(player->getBoundingBox()))
+            {
+                setEnemyDead(enemy, j);
+                setPlayerDead();
             }
 
             for (int k = 0; k < NUMBER_OF_BLOCKAGES; ++k)
@@ -313,10 +314,15 @@ void GameScene::checkCollision()
                 if (!blockage->isAlive()) continue;
 
                 auto blockageBox = blockage->getBoundingBox();
-
                 if (enemy->isMissileVisible() && enemyMissileBox.intersectsRect(blockageBox))
                 {
                     enemy->missileHit();
+                    blockages[k]->onHit();
+                }
+
+                if (enemy->isAlive() && enemy->getBoundingBox().intersectsRect(blockageBox))
+                {
+                    setEnemyDead(enemy, j);
                     blockages[k]->onHit();
                 }
             }
@@ -341,6 +347,51 @@ void GameScene::checkCollision()
             blockages[k]->onHit();
         }
     }
+}
+
+void GameScene::setGameState(GameState state)
+{
+    gameState = state;
+
+    if (gameState == OVER)
+    {
+        for (int i = 0; i < ENEMY_ROW_COUNT; ++i)
+        {
+            for (int j = 0; j < ENEMY_COL_COUNT; ++j)
+            {
+                auto enemy = enemies[i][j];
+                enemy->unscheduleUpdate();
+            }
+        }
+    }
+}
+
+void GameScene::setEnemyDead(Enemy *enemy, int colIndexOfEnemy)
+{
+    enemy->setAlive(false);
+    enemyMoveInterval -= ENEMY_MOVE_INTERVAL_DELTA_PER_ENEMY_DEAD;
+
+    aliveEnemyCount--;
+    if (aliveEnemyCount <= 0)
+    {
+        setGameState(OVER);
+    }
+
+    for (int k = ENEMY_ROW_COUNT - 1; k >= 0; --k)
+    {
+        auto frontLineEnemy = enemies[k][colIndexOfEnemy];
+        if (frontLineEnemy->isAlive())
+        {
+            frontLineEnemy->setAtFrontLine(true);
+            break;
+        }
+    }
+}
+
+void GameScene::setPlayerDead()
+{
+    player->setVisible(false);
+    setGameState(OVER);
 }
 
 bool GameScene::onTouchBegan(Touch* touch, Event* event)

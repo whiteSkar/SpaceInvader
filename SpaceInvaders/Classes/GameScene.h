@@ -17,7 +17,7 @@ static const int ENEMY_ROW_COUNT = 5;
 static const int ENEMY_COL_COUNT = 11;
 static const int NUMBER_OF_ENEMIES = ENEMY_ROW_COUNT * ENEMY_COL_COUNT;
 
-static const float ENEMY_MOVE_INTERVAL_DEFAULT = 0.5f;
+static const float ENEMY_MOVE_INTERVAL_DEFAULT = 0.03f;
 static const float ENEMY_MOVE_INTERVAL_MIN = 0.03f;
 static const float ENEMY_MOVE_INTERVAL_DELTA_PER_ENEMY_DEAD = (ENEMY_MOVE_INTERVAL_DEFAULT - ENEMY_MOVE_INTERVAL_MIN) / NUMBER_OF_ENEMIES;
 
@@ -72,6 +72,11 @@ public:
 
     void checkCollision();
 
+    void setEnemyDead(Enemy *enemy, int colIndexOfEnemy);
+    void setPlayerDead();
+
+    void setGameState(GameState state);
+
     GameState gameState;
     
     bool isTouchDown;
@@ -86,6 +91,7 @@ public:
     Enemy *enemies[ENEMY_ROW_COUNT][ENEMY_COL_COUNT];
     Blockage *blockages[NUMBER_OF_BLOCKAGES];
 
+    bool isEnemyBelowPlayer;
     bool isEnemyMoveDownPending;
     float enemyDeltaX;
     float enemyGap;
