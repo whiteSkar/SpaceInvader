@@ -35,7 +35,8 @@ bool GameScene::init()
     setGameState(NOT_INITIALIZED);
     isEnemyMoveDownPending = false;
     isEnemyBelowPlayer = false;
-    enemyMoveElapsedTime = 0;    
+    enemyMoveElapsedTime = 0;   
+    currentScore = 0;
     enemyDeltaX = visibleSize.width * (1.0f - ENEMY_ARMY_WIDTH_PERCENTAGE_OF_SCREEN) / ENEMY_NUMBER_OF_MOVEMENTS_FROM_SIDE_TO_SIDE_FOR_ONE_MINUS_ENEMY_ARMY_WIDTH_PERCENTAGE_OF_SCREEN;
     enemyGap = enemyDeltaX * ENEMY_GAP_PROPORTIONAL_TO_DELTA_X;
     enemyExpectedWidth = enemyGap * ENEMY_WIDTH_PROPORTIONAL_TO_GAP;
@@ -60,12 +61,12 @@ bool GameScene::init()
     menu->setPosition(Point::ZERO);
     this->addChild(menu, 1);
 
-    auto label = LabelTTF::create("Hello World", "Arial", 24);
-    
-    // position the label on the center of the screen
-    label->setPosition(Point(visibleOrigin.x + visibleSize.width/2,
-                            visibleOrigin.y + visibleSize.height - label->getContentSize().height));
-    this->addChild(label, 1);
+    // Fix Font and size
+    scoreLabel = LabelTTF::create(SCORE_LABEL + std::to_string(currentScore), "Arial", 48); // to_string is not supported in ndk. copy to_string method from my previous game
+    scoreLabel->setPosition(visibleOrigin.x + visibleSize.width * HUD_LEFT_OFFSET,
+                            visibleOrigin.y + visibleSize.height * HUD_TOP_OFFSET_FROM_BOTTOM - scoreLabel->getContentSize().height/2);
+    scoreLabel->setAnchorPoint(Point(0.0f, 0.5f));
+    this->addChild(scoreLabel, 99);
 
     player = Sprite::create("player.png");
     player->setPosition(Point(visibleOrigin.x + visibleSize.width / 2, visibleOrigin.y + visibleSize.height * PLAYER_Y_POS_PERCENTAGE_OF_SCREEN));
@@ -92,6 +93,7 @@ bool GameScene::init()
 
             auto enemy = Enemy::create(frames);
             enemy->setRepeat();
+            enemy->setScoreValue(SCORE_VALUE_BIG_ENEMY);    // differentiate between diff size enemies
 
             if (i == ENEMY_ROW_COUNT - 1)
             {
@@ -301,6 +303,8 @@ void GameScene::checkCollision()
             {
                 missile->setVisible(false);
                 setEnemyDead(enemy, j);
+
+                addScore(enemy->getScoreValue());   // score only goes up when it is hit by your missile
             }
 
             auto enemyMissileBox = enemy->getMissileBoundingBox();
@@ -373,6 +377,13 @@ void GameScene::setGameState(GameState state)
         }
     }
 }
+
+void GameScene::addScore(int deltaScore)
+{
+    currentScore += deltaScore;
+    scoreLabel->setString(SCORE_LABEL + std::to_string(currentScore));
+}
+
 
 void GameScene::setEnemyDead(Enemy *enemy, int colIndexOfEnemy)
 {

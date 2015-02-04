@@ -17,6 +17,10 @@ static const int ENEMY_ROW_COUNT = 5;
 static const int ENEMY_COL_COUNT = 11;
 static const int NUMBER_OF_ENEMIES = ENEMY_ROW_COUNT * ENEMY_COL_COUNT;
 
+static const int SCORE_VALUE_BIG_ENEMY = 10;
+static const int SCORE_VALUE_MED_ENEMY = 20;
+static const int SCORE_VALUE_SMALL_ENEMY = 40;
+
 static const float ENEMY_MOVE_INTERVAL_DEFAULT = 0.5f;
 static const float ENEMY_MOVE_INTERVAL_MIN = 0.03f;
 static const float ENEMY_MOVE_INTERVAL_DELTA_PER_ENEMY_DEAD = (ENEMY_MOVE_INTERVAL_DEFAULT - ENEMY_MOVE_INTERVAL_MIN) / NUMBER_OF_ENEMIES;
@@ -34,6 +38,11 @@ static const int ENEMY_NUMBER_OF_MOVEMENTS_FROM_TOP_TO_BOTTOM = 11;
 static const int NUMBER_OF_WHOLE_BLOCKS = 4;
 static const int NUMBER_OF_BLOCKAGES_IN_A_WHOLE_BLOCK = 10;
 static const int NUMBER_OF_BLOCKAGES = NUMBER_OF_WHOLE_BLOCKS * NUMBER_OF_BLOCKAGES_IN_A_WHOLE_BLOCK;
+
+static const float HUD_TOP_OFFSET_FROM_BOTTOM = 0.98f;
+static const float HUD_LEFT_OFFSET = 0.03f;
+
+static const std::string SCORE_LABEL = "SCORE: ";
 
 typedef std::pair<float, float> Position;
 
@@ -76,8 +85,11 @@ public:
     void setPlayerDead();
 
     void setGameState(GameState state);
+    void addScore(int score);
 
     GameState gameState;
+
+    int currentScore;
     
     bool isTouchDown;
 	cocos2d::Point currentTouchPos;
@@ -102,6 +114,8 @@ public:
     int aliveEnemyCount;
 
     float enemyMoveInterval;
+
+    cocos2d::LabelTTF *scoreLabel;
 };
 
 #endif // __GAME_SCENE_H__

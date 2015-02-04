@@ -22,6 +22,7 @@ bool Enemy::initWithFrames(std::vector<Sprite*> frames)
         _missileShootElapsedTime = 0.0f;
         _nextMissileTimeInterval = ((float) (rand() % ((ENEMY_MISSILE_INTERVAL_MAX - ENEMY_MISSILE_INTERVAL_MIN) * 10))) / 10.0f + ENEMY_MISSILE_INTERVAL_MIN; // duplicate code
         _isAtFrontLine = false;
+        _scoreValue = DEFAULT_SCORE_VALUE;
 
         _missile = Sprite::create("missile.png");   // possibly use different missile image for enemy
         _missile->setVisible(false);
@@ -99,6 +100,16 @@ void Enemy::setAlive(bool isAlive)
 
     AnimatableObject::setAlive(isAlive, applyIsAliveToNode);    // hacky way to apply setAlive to the frames only
     _isAtFrontLine = false;
+}
+
+void Enemy::setScoreValue(int scoreValue)
+{
+    _scoreValue = scoreValue;
+}
+
+int Enemy::getScoreValue()
+{
+    return _scoreValue;
 }
 
 void Enemy::setAtFrontLine(bool isAtFrontLine)

@@ -3,8 +3,10 @@
 
 #include "AnimatableObject.h"
 
-static const int ENEMY_MISSILE_INTERVAL_MAX = 3;
-static const int ENEMY_MISSILE_INTERVAL_MIN = 1;
+static const int ENEMY_MISSILE_INTERVAL_MAX = 7;
+static const int ENEMY_MISSILE_INTERVAL_MIN = 3;
+
+static const int DEFAULT_SCORE_VALUE = 10;
 
 static const float MISSILE_SPEED = 600.0f;
 
@@ -26,6 +28,9 @@ public:
 
     void setAlive(bool isAlive);
 
+    void setScoreValue(int scoreValue);
+    int getScoreValue();
+
     void setAtFrontLine(bool isAtFrontLine);
 
 private:
@@ -34,6 +39,8 @@ private:
 
     float _missileShootElapsedTime;
     float _nextMissileTimeInterval;
+
+    int _scoreValue;
 
     bool _isAtFrontLine;
 };
