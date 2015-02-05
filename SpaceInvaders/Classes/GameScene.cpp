@@ -113,8 +113,16 @@ bool GameScene::init()
         for (int j = 0; j < ENEMY_COL_COUNT; ++j)
         {
             std::vector<Sprite*> frames;
-            auto sprite1 = Sprite::create("enemy_large.png");
-            auto sprite2 = Sprite::create("enemy_large2.png");
+
+            std::string enemyType = "small";
+            if (i >= 1 && i <= 2)
+                enemyType = "med";
+            if (i >= 3)
+                enemyType = "large";
+
+            // smaller enemies sprites need to be horizontally shorter. Otherwise, collision doesn't work properly
+            auto sprite1 = Sprite::create("enemy_" + enemyType + ".png");
+            auto sprite2 = Sprite::create("enemy_" + enemyType + "2.png");
 
             sprite1->setScale(enemyExpectedWidth / sprite1->getBoundingBox().size.width);
             sprite2->setScale(enemyExpectedWidth / sprite2->getBoundingBox().size.width);
@@ -124,7 +132,14 @@ bool GameScene::init()
 
             auto enemy = Enemy::create(frames);
             enemy->setRepeat();
-            enemy->setScoreValue(SCORE_VALUE_BIG_ENEMY);    // differentiate between diff size enemies
+
+            if (enemyType == "small")   // use constants
+                enemy->setScoreValue(SCORE_VALUE_SMALL_ENEMY);
+            else if (enemyType == "med")
+                enemy->setScoreValue(SCORE_VALUE_MED_ENEMY);
+            else
+                enemy->setScoreValue(SCORE_VALUE_LARGE_ENEMY);
+
 
             if (i == ENEMY_ROW_COUNT - 1)
             {

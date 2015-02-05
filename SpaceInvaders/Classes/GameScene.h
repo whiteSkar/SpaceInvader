@@ -18,7 +18,7 @@ static const int ENEMY_ROW_COUNT = 5;
 static const int ENEMY_COL_COUNT = 11;
 static const int NUMBER_OF_ENEMIES = ENEMY_ROW_COUNT * ENEMY_COL_COUNT;
 
-static const int SCORE_VALUE_BIG_ENEMY = 10;
+static const int SCORE_VALUE_LARGE_ENEMY = 10;
 static const int SCORE_VALUE_MED_ENEMY = 20;
 static const int SCORE_VALUE_SMALL_ENEMY = 40;
 
