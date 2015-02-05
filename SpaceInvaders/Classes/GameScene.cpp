@@ -37,6 +37,7 @@ bool GameScene::init()
     isEnemyBelowPlayer = false;
     enemyMoveElapsedTime = 0;   
     currentScore = 0;
+    playerLife = DEFAULT_PLAYER_LIVES;
     enemyDeltaX = visibleSize.width * (1.0f - ENEMY_ARMY_WIDTH_PERCENTAGE_OF_SCREEN) / ENEMY_NUMBER_OF_MOVEMENTS_FROM_SIDE_TO_SIDE_FOR_ONE_MINUS_ENEMY_ARMY_WIDTH_PERCENTAGE_OF_SCREEN;
     enemyGap = enemyDeltaX * ENEMY_GAP_PROPORTIONAL_TO_DELTA_X;
     enemyExpectedWidth = enemyGap * ENEMY_WIDTH_PROPORTIONAL_TO_GAP;
@@ -61,13 +62,43 @@ bool GameScene::init()
     menu->setPosition(Point::ZERO);
     this->addChild(menu, 1);
 
-    // Fix Font and size
+    /* HUD */
+    auto hudYPosForAnchorZero = visibleOrigin.y + visibleSize.height * HUD_TOP_OFFSET_FROM_BOTTOM;
+
+    // Fix Font and size. Font size need to be also dynamic
     scoreLabel = LabelTTF::create(SCORE_LABEL + std::to_string(currentScore), "Arial", 48); // to_string is not supported in ndk. copy to_string method from my previous game
     scoreLabel->setPosition(visibleOrigin.x + visibleSize.width * HUD_LEFT_OFFSET,
-                            visibleOrigin.y + visibleSize.height * HUD_TOP_OFFSET_FROM_BOTTOM - scoreLabel->getContentSize().height/2);
-    scoreLabel->setAnchorPoint(Point(0.0f, 0.5f));
+                            hudYPosForAnchorZero);
+    scoreLabel->setAnchorPoint(Point::ZERO);
     this->addChild(scoreLabel, 99);
 
+    // Need auto resize image
+    playerLifeImage3 = Sprite::create("player.png");
+    playerLifeImage3->setAnchorPoint(Point::ZERO);
+    playerLifeImage3->setPosition(visibleOrigin.x + visibleSize.width * HUD_RIGHT_OFFSET - playerLifeImage3->getBoundingBox().size.width,
+                                  hudYPosForAnchorZero);
+    this->addChild(playerLifeImage3);
+
+    playerLifeImage2 = Sprite::create("player.png");
+    playerLifeImage2->setAnchorPoint(Point::ZERO);
+    playerLifeImage2->setPosition(playerLifeImage3->getPositionX() - visibleSize.width * HUD_PLAYER_LIFE_IMAGE_GAP - playerLifeImage2->getBoundingBox().size.width,
+                                  hudYPosForAnchorZero);
+    this->addChild(playerLifeImage2);
+
+    playerLifeImage1 = Sprite::create("player.png");
+    playerLifeImage1->setAnchorPoint(Point::ZERO);
+    playerLifeImage1->setPosition(playerLifeImage2->getPositionX() - visibleSize.width * HUD_PLAYER_LIFE_IMAGE_GAP - playerLifeImage1->getBoundingBox().size.width,
+                                  hudYPosForAnchorZero);
+    this->addChild(playerLifeImage1);
+
+    // Fix font and size
+    auto playerLivesLabel = LabelTTF::create("LIVES", "Arial", 48);
+    playerLivesLabel->setPosition(playerLifeImage1->getPositionX() - visibleSize.width * HUD_LABEL_VALUE_GAP - playerLivesLabel->getContentSize().width,
+                                  hudYPosForAnchorZero);
+    playerLivesLabel->setAnchorPoint(Point::ZERO);
+    this->addChild(playerLivesLabel, 99);
+
+    /* Objects */
     player = Sprite::create("player.png");
     player->setPosition(Point(visibleOrigin.x + visibleSize.width / 2, visibleOrigin.y + visibleSize.height * PLAYER_Y_POS_PERCENTAGE_OF_SCREEN));
     this->addChild(player, 1);  // refactor z order
@@ -410,6 +441,17 @@ void GameScene::setEnemyDead(Enemy *enemy, int colIndexOfEnemy)
 void GameScene::setPlayerDead()
 {
     player->setVisible(false);
+
+    playerLife--;
+    if (playerLife < 0)
+    {
+        playerLife = 0;
+    }
+
+    playerLifeImage3->setVisible(playerLife >= 3);
+    playerLifeImage2->setVisible(playerLife >= 2);
+    playerLifeImage1->setVisible(playerLife >= 1);
+
     setGameState(OVER);
 }
 

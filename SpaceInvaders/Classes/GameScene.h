@@ -7,6 +7,7 @@
 
 static const float PLAYER_SPEED = 300.0f;
 static const float PLAYER_MISSILE_SPEED = 1000.0f;
+static const int DEFAULT_PLAYER_LIVES = 3;
 
 static const float PLAYER_Y_POS_PERCENTAGE_OF_SCREEN = 0.3f;
 static const float BLOCKAGE_Y_POS_PERCENTAGE_OF_SCREEN = 0.42f;
@@ -39,8 +40,11 @@ static const int NUMBER_OF_WHOLE_BLOCKS = 4;
 static const int NUMBER_OF_BLOCKAGES_IN_A_WHOLE_BLOCK = 10;
 static const int NUMBER_OF_BLOCKAGES = NUMBER_OF_WHOLE_BLOCKS * NUMBER_OF_BLOCKAGES_IN_A_WHOLE_BLOCK;
 
-static const float HUD_TOP_OFFSET_FROM_BOTTOM = 0.98f;
+static const float HUD_TOP_OFFSET_FROM_BOTTOM = 0.94f;
 static const float HUD_LEFT_OFFSET = 0.03f;
+static const float HUD_RIGHT_OFFSET = 1.0f - HUD_LEFT_OFFSET;
+static const float HUD_PLAYER_LIFE_IMAGE_GAP = 0.02f;
+static const float HUD_LABEL_VALUE_GAP = 0.04f;
 
 static const std::string SCORE_LABEL = "SCORE: ";
 
@@ -90,6 +94,7 @@ public:
     GameState gameState;
 
     int currentScore;
+    int playerLife;
     
     bool isTouchDown;
 	cocos2d::Point currentTouchPos;
@@ -98,6 +103,9 @@ public:
     cocos2d::Point visibleOrigin;
 
     cocos2d::Sprite *player;
+    cocos2d::Sprite *playerLifeImage3;
+    cocos2d::Sprite *playerLifeImage2;
+    cocos2d::Sprite *playerLifeImage1;
     cocos2d::Sprite *missile;
 
     Enemy *enemies[ENEMY_ROW_COUNT][ENEMY_COL_COUNT];
