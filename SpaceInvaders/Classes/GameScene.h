@@ -14,6 +14,9 @@ static const float BLOCKAGE_Y_POS_PERCENTAGE_OF_SCREEN = 0.42f;
 static const float ENEMY_ARMY_Y_POS_PERCENTAGE_OF_SCREEN = 0.9f;
 static const float BATTLE_FIELD_HEIGHT_PERCENTAGE = ENEMY_ARMY_Y_POS_PERCENTAGE_OF_SCREEN - PLAYER_Y_POS_PERCENTAGE_OF_SCREEN;
 
+static const float UI_HEIGHT_PERCENTAGE = PLAYER_Y_POS_PERCENTAGE_OF_SCREEN;
+static const float UI_FIRE_BUTTON_X_POS = 0.75f;
+
 static const int ENEMY_ROW_COUNT = 5;
 static const int ENEMY_COL_COUNT = 11;
 static const int NUMBER_OF_ENEMIES = ENEMY_ROW_COUNT * ENEMY_COL_COUNT;
@@ -65,15 +68,14 @@ public:
     static cocos2d::Scene* createScene();
 
     // Here's a difference. Method 'init' in cocos2d-x returns bool, instead of returning 'id' in cocos2d-iphone
-    virtual bool init();  
-    
-    // a selector callback
-    void menuCloseCallback(cocos2d::Ref* pSender);
+    virtual bool init();
     
     // implement the "static create()" method manually
     CREATE_FUNC(GameScene);
 
     //virtual void draw (cocos2d::Renderer* renderer, const kmMat4& transform, bool transformUpdated);    // debugging purpose
+
+    void fireMissile(cocos2d::Ref* pSender);
 
     bool onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event);
 	void onTouchMoved(cocos2d::Touch* touch, cocos2d::Event* event);

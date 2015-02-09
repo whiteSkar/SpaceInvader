@@ -44,23 +44,17 @@ bool GameScene::init()
     aliveEnemyCount = ENEMY_ROW_COUNT * ENEMY_COL_COUNT;
     enemyMoveInterval = ENEMY_MOVE_INTERVAL_DEFAULT;
 
-    /////////////////////////////
-    // 2. add a menu item with "X" image, which is clicked to quit the program
-    //    you may modify it.
-
-    // add a "close" icon to exit the progress. it's an autorelease object
-    auto closeItem = MenuItemImage::create(
-                                           "CloseNormal.png",
-                                           "CloseSelected.png",
-                                           CC_CALLBACK_1(GameScene::menuCloseCallback, this));
+    auto fireButton = MenuItemImage::create(
+                                           "button_fire.png",   // PLACEHOLDER IMAGE
+                                           "button_fire.png",
+                                           CC_CALLBACK_1(GameScene::fireMissile, this));
     
-	closeItem->setPosition(Point(visibleOrigin.x + visibleSize.width - closeItem->getContentSize().width/2 ,
-                                visibleOrigin.y + closeItem->getContentSize().height/2));
+	fireButton->setPosition(Point(visibleOrigin.x + visibleSize.width * UI_FIRE_BUTTON_X_POS,
+                                  visibleOrigin.y + visibleSize.height * UI_HEIGHT_PERCENTAGE / 2.0f));
 
-    // create menu, it's an autorelease object
-    auto menu = Menu::create(closeItem, NULL);
-    menu->setPosition(Point::ZERO);
-    this->addChild(menu, 1);
+    auto ui = Menu::create(fireButton, NULL);
+    ui->setPosition(Point::ZERO);
+    this->addChild(ui, 99);
 
     /* HUD */
     auto hudYPosForAnchorZero = visibleOrigin.y + visibleSize.height * HUD_TOP_OFFSET_FROM_BOTTOM;
@@ -257,12 +251,6 @@ void GameScene::update(float dt)
         }
 
         player->setPositionX(player->getPositionX() + PLAYER_SPEED * dt * direction);
-
-        if (!missile->isVisible())
-        {
-            missile->setPosition(player->getPositionX(), player->getPositionY() + player->getBoundingBox().size.height/2 + missile->getBoundingBox().size.height/2);
-            missile->setVisible(true);
-        }
     }
 
     this->checkCollision();
@@ -506,16 +494,11 @@ void GameScene::onTouchCancelled(Touch* touch, Event* event)
 //    ccDrawLine(Point(visibleOrigin.x + visibleSize.width - 5, visibleOrigin.y), Point(visibleOrigin.x + visibleSize.width - 5, visibleOrigin.y + visibleSize.height));
 //}
 
-void GameScene::menuCloseCallback(Ref* pSender)
+void GameScene::fireMissile(Ref* pSender)
 {
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_WP8) || (CC_TARGET_PLATFORM == CC_PLATFORM_WINRT)
-	MessageBox("You pressed the close button. Windows Store Apps do not implement a close button.","Alert");
-    return;
-#endif
-
-    Director::getInstance()->end();
-
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
-    exit(0);
-#endif
+    if (!missile->isVisible())
+    {
+        missile->setPosition(player->getPositionX(), player->getPositionY() + player->getBoundingBox().size.height/2 + missile->getBoundingBox().size.height/2);
+        missile->setVisible(true);
+    }
 }

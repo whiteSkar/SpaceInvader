@@ -24,7 +24,7 @@ bool AppDelegate::applicationDidFinishLaunching()
         //glview->setFrameSize(1920, 1280);
 
         #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
-            glview->setFrameZoomFactor(0.5f);
+            glview->setFrameZoomFactor(0.3f);
         #endif
 
         director->setOpenGLView(glview);
