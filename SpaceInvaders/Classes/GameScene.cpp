@@ -56,6 +56,16 @@ bool GameScene::init()
     ui->setPosition(Point::ZERO);
     this->addChild(ui, 99);
 
+    joystickSlider = Sprite::create("joystick_slider.png");
+    joystickSlider->setPosition(visibleOrigin.x + visibleSize.width * 0.25f, 
+                                visibleOrigin.y + visibleSize.height * UI_HEIGHT_PERCENTAGE / 2.0f);
+    this->addChild(joystickSlider);
+
+    joystickStick = Sprite::create("joystick_stick.png");
+    joystickStick->setPosition(visibleOrigin.x + visibleSize.width * 0.25f, 
+                                visibleOrigin.y + visibleSize.height * UI_HEIGHT_PERCENTAGE / 2.0f);
+    this->addChild(joystickStick);
+
     /* HUD */
     auto hudYPosForAnchorZero = visibleOrigin.y + visibleSize.height * HUD_TOP_OFFSET_FROM_BOTTOM;
 
@@ -199,16 +209,15 @@ bool GameScene::init()
         this->addChild(wholeBlockNode, 999);
     }
 
-    isTouchDown = false;
-    currentTouchPos = Point::ZERO;
+    touchPointInJoystickArea = Point::ZERO;
 
-    auto touchListener = EventListenerTouchOneByOne::create();
-	touchListener->setSwallowTouches(true);
+    auto touchListener = EventListenerTouchAllAtOnce::create();
+	//touchListener->setSwallowTouches(true);
 
-	touchListener->onTouchBegan = CC_CALLBACK_2(GameScene::onTouchBegan, this);
-	touchListener->onTouchMoved = CC_CALLBACK_2(GameScene::onTouchMoved, this);
-	touchListener->onTouchEnded = CC_CALLBACK_2(GameScene::onTouchEnded, this);
-	touchListener->onTouchCancelled = CC_CALLBACK_2(GameScene::onTouchCancelled, this);
+	touchListener->onTouchesBegan = CC_CALLBACK_2(GameScene::onTouchesBegan, this);
+	touchListener->onTouchesMoved = CC_CALLBACK_2(GameScene::onTouchesMoved, this);
+	touchListener->onTouchesEnded = CC_CALLBACK_2(GameScene::onTouchesEnded, this);
+	touchListener->onTouchesCancelled = CC_CALLBACK_2(GameScene::onTouchesCancelled, this);
 	
 	Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(touchListener, this);
 
@@ -241,16 +250,35 @@ void GameScene::update(float dt)
         }
     }
 
-    if (isTouchDown)
+    if (touchPointInJoystickArea != Point::ZERO)
     {
-        // touch HUD for movement and missile shoot => movement on the bottom right and shooting on the bottom left
-        auto direction = 1;
-        if (currentTouchPos.x <= visibleSize.width / 2)
+        auto newStickXPos = touchPointInJoystickArea.x;
+        auto sliderLeftX = joystickSlider->getPositionX() - joystickSlider->getBoundingBox().size.width / 2;
+        auto sliderRightX = joystickSlider->getPositionX() + joystickSlider->getBoundingBox().size.width / 2;
+        auto stickWidthHalf = joystickStick->getBoundingBox().size.width / 2;
+
+        if (newStickXPos - stickWidthHalf < sliderLeftX)
         {
-            direction = -1;
+            newStickXPos = sliderLeftX + stickWidthHalf;
+        }
+        else if (newStickXPos + stickWidthHalf > sliderRightX)
+        {
+            newStickXPos = sliderRightX - stickWidthHalf;
         }
 
-        player->setPositionX(player->getPositionX() + PLAYER_SPEED * dt * direction);
+        joystickStick->setPositionX(newStickXPos);
+
+        //auto direction = 1;
+        //if (currentTouchPos.x <= visibleSize.width / 2)
+        //{
+        //    direction = -1;
+        //}
+
+        //player->setPositionX(player->getPositionX() + PLAYER_SPEED * dt * direction);
+    }
+    else
+    {
+        joystickStick->setPositionX(joystickSlider->getPositionX());
     }
 
     this->checkCollision();
@@ -458,27 +486,57 @@ void GameScene::setPlayerDead()
     setGameState(OVER);
 }
 
-bool GameScene::onTouchBegan(Touch* touch, Event* event)
+void GameScene::onTouchesBegan(const std::vector<cocos2d::Touch*> &touches, Event* event)
 {
-	isTouchDown = true;
-    currentTouchPos = touch->getLocation();
-
-	return true;
+    onTouchesMoved(touches, event);
 }
 
-void GameScene::onTouchMoved(Touch* touch, Event* event)
+void GameScene::onTouchesMoved(const std::vector<cocos2d::Touch*> &touches, Event* event)
 {
-	currentTouchPos = touch->getLocation();
+    touchPointInJoystickArea = Point::ZERO;
+
+    for (auto it = touches.begin(); it != touches.end(); ++it)
+    {
+        auto touch = *it;
+        if (isPositionWithinJoystickArea(touch->getLocation()))
+        {
+            touchPointInJoystickArea = touch->getLocation();
+        }
+    }
 }
 
-void GameScene::onTouchEnded(Touch* touch, Event* event)
+void GameScene::onTouchesEnded(const std::vector<cocos2d::Touch*> &touches, Event* event)
 {
-	isTouchDown = false;
+    for (auto it = touches.begin(); it != touches.end(); ++it)
+    {
+        auto touch = *it;
+        if (isPositionWithinJoystickArea(touch->getLocation()))
+        {
+            touchPointInJoystickArea = Point::ZERO;
+        }
+    }
 }
 
-void GameScene::onTouchCancelled(Touch* touch, Event* event)
+void GameScene::onTouchesCancelled(const std::vector<cocos2d::Touch*> &touches, Event* event)
 {
-	onTouchEnded(touch, event);
+	onTouchesEnded(touches, event);
+}
+
+bool GameScene::isPositionWithinJoystickArea(Point position)
+{
+    float areaHeightHalf = joystickSlider->getBoundingBox().size.height * UI_JOYSTICK_AREA_HEIGHT_MULTIPLIER / 2;
+    float areaWidthHalf = joystickSlider->getBoundingBox().size.width * UI_JOYSTICK_AREA_WIDTH_MULTIPLIER / 2;
+    float areaMinX = joystickSlider->getPositionX() - areaWidthHalf;
+    float areaMaxX = joystickSlider->getPositionX() + areaWidthHalf;
+    float areaMinY = joystickSlider->getPositionY() - areaHeightHalf;
+    float areaMaxY = joystickSlider->getPositionY() + areaHeightHalf;
+    
+    if (position.x >= areaMinX && position.x <= areaMaxX && position.y >= areaMinY && position.y <= areaMaxY)
+    {
+        return true;
+    }
+
+    return false;
 }
 
 //void GameScene::draw(Renderer* renderer, const kmMat4& transform, bool transformUpdated)

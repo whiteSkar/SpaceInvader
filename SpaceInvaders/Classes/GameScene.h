@@ -16,6 +16,8 @@ static const float BATTLE_FIELD_HEIGHT_PERCENTAGE = ENEMY_ARMY_Y_POS_PERCENTAGE_
 
 static const float UI_HEIGHT_PERCENTAGE = PLAYER_Y_POS_PERCENTAGE_OF_SCREEN;
 static const float UI_FIRE_BUTTON_X_POS = 0.75f;
+static const float UI_JOYSTICK_AREA_HEIGHT_MULTIPLIER = 5.0f;
+static const float UI_JOYSTICK_AREA_WIDTH_MULTIPLIER = 1.5f;
 
 static const int ENEMY_ROW_COUNT = 5;
 static const int ENEMY_COL_COUNT = 11;
@@ -77,10 +79,12 @@ public:
 
     void fireMissile(cocos2d::Ref* pSender);
 
-    bool onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event);
-	void onTouchMoved(cocos2d::Touch* touch, cocos2d::Event* event);
-	void onTouchEnded(cocos2d::Touch* touch, cocos2d::Event* event);
-	void onTouchCancelled(cocos2d::Touch* touch, cocos2d::Event* event);
+    void onTouchesBegan(const std::vector<cocos2d::Touch*> &touches, cocos2d::Event* event);
+	void onTouchesMoved(const std::vector<cocos2d::Touch*> &touches, cocos2d::Event* event);
+	void onTouchesEnded(const std::vector<cocos2d::Touch*> &touches, cocos2d::Event* event);
+	void onTouchesCancelled(const std::vector<cocos2d::Touch*> &touches, cocos2d::Event* event);
+
+    bool GameScene::isPositionWithinJoystickArea(cocos2d::Point position);
 
     void update(float dt);
     void updateEnemy(float dt);
@@ -98,8 +102,7 @@ public:
     int currentScore;
     int playerLife;
     
-    bool isTouchDown;
-	cocos2d::Point currentTouchPos;
+	cocos2d::Point touchPointInJoystickArea;
 
     cocos2d::Size visibleSize;
     cocos2d::Point visibleOrigin;
@@ -109,6 +112,9 @@ public:
     cocos2d::Sprite *playerLifeImage2;
     cocos2d::Sprite *playerLifeImage1;
     cocos2d::Sprite *missile;
+
+    cocos2d::Sprite *joystickStick;
+    cocos2d::Sprite *joystickSlider;
 
     Enemy *enemies[ENEMY_ROW_COUNT][ENEMY_COL_COUNT];
     Blockage *blockages[NUMBER_OF_BLOCKAGES];
