@@ -279,7 +279,15 @@ void GameScene::update(float dt)
             direction = 1;
         }
 
-        player->setPositionX(player->getPositionX() + PLAYER_SPEED * dt * direction);
+        auto playerHalfWidth = player->getBoundingBox().size.width/2;
+        auto originalPlayerPosX = player->getPositionX();
+        auto newPlayerPosX = player->getPositionX() + PLAYER_SPEED * dt * direction;
+
+        player->setPositionX(newPlayerPosX);
+        if (newPlayerPosX - playerHalfWidth < visibleOrigin.x || newPlayerPosX + playerHalfWidth > visibleOrigin.x + visibleSize.width)
+        {
+            player->setPositionX(originalPlayerPosX);
+        }
     }
     else
     {
