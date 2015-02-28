@@ -253,8 +253,9 @@ void GameScene::update(float dt)
     if (touchPointInJoystickArea != Point::ZERO)
     {
         auto newStickXPos = touchPointInJoystickArea.x;
-        auto sliderLeftX = joystickSlider->getPositionX() - joystickSlider->getBoundingBox().size.width / 2;
-        auto sliderRightX = joystickSlider->getPositionX() + joystickSlider->getBoundingBox().size.width / 2;
+        auto sliderMidX = joystickSlider->getPositionX();
+        auto sliderLeftX = sliderMidX - joystickSlider->getBoundingBox().size.width / 2;
+        auto sliderRightX = sliderMidX + joystickSlider->getBoundingBox().size.width / 2;
         auto stickWidthHalf = joystickStick->getBoundingBox().size.width / 2;
 
         if (newStickXPos - stickWidthHalf < sliderLeftX)
@@ -268,13 +269,17 @@ void GameScene::update(float dt)
 
         joystickStick->setPositionX(newStickXPos);
 
-        //auto direction = 1;
-        //if (currentTouchPos.x <= visibleSize.width / 2)
-        //{
-        //    direction = -1;
-        //}
+        auto direction = 0;
+        if (newStickXPos < sliderMidX)
+        {
+            direction = -1;
+        }
+        else if (newStickXPos > sliderMidX)
+        {
+            direction = 1;
+        }
 
-        //player->setPositionX(player->getPositionX() + PLAYER_SPEED * dt * direction);
+        player->setPositionX(player->getPositionX() + PLAYER_SPEED * dt * direction);
     }
     else
     {
