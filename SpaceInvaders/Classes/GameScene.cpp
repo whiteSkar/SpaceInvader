@@ -144,7 +144,6 @@ bool GameScene::init()
             else
                 enemy->setScoreValue(SCORE_VALUE_LARGE_ENEMY);
 
-
             if (i == ENEMY_ROW_COUNT - 1)
             {
                 enemy->setAtFrontLine(true);
@@ -227,6 +226,67 @@ bool GameScene::init()
     return true;
 }
 
+//void GameScene::initializeForNextRound()
+//{
+//    isEnemyMoveDownPending = false;
+//    isEnemyBelowPlayer = false;
+//    enemyMoveElapsedTime = 0;
+//    aliveEnemyCount = ENEMY_ROW_COUNT * ENEMY_COL_COUNT;
+//
+//    player->setPosition(Point(visibleOrigin.x + visibleSize.width / 2, visibleOrigin.y + visibleSize.height * PLAYER_Y_POS_PERCENTAGE_OF_SCREEN));
+//
+//    for (int i = 0; i < ENEMY_ROW_COUNT; ++i)
+//    {
+//        for (int j = 0; j < ENEMY_COL_COUNT; ++j)
+//        {
+//            std::vector<Sprite*> frames;
+//
+//            std::string enemyType = "small";
+//            if (i >= 1 && i <= 2)
+//                enemyType = "med";
+//            if (i >= 3)
+//                enemyType = "large";
+//
+//            // smaller enemies sprites need to be horizontally shorter. Otherwise, collision doesn't work properly
+//            auto sprite1 = Sprite::create("enemy_" + enemyType + ".png");
+//            auto sprite2 = Sprite::create("enemy_" + enemyType + "2.png");
+//
+//            sprite1->setScale(enemyExpectedWidth / sprite1->getBoundingBox().size.width);
+//            sprite2->setScale(enemyExpectedWidth / sprite2->getBoundingBox().size.width);
+//
+//            frames.push_back(sprite1);
+//            frames.push_back(sprite2);
+//
+//            auto enemy = Enemy::create(frames);
+//            enemy->setRepeat();
+//
+//            if (enemyType == "small")   // use constants
+//                enemy->setScoreValue(SCORE_VALUE_SMALL_ENEMY);
+//            else if (enemyType == "med")
+//                enemy->setScoreValue(SCORE_VALUE_MED_ENEMY);
+//            else
+//                enemy->setScoreValue(SCORE_VALUE_LARGE_ENEMY);
+//
+//            if (i == ENEMY_ROW_COUNT - 1)
+//            {
+//                enemy->setAtFrontLine(true);
+//            }
+//            
+//            auto enemySize = enemy->getSize();
+//            enemy->setPosition(Point(visibleOrigin.x + visibleSize.width * ((1.0f - ENEMY_ARMY_WIDTH_PERCENTAGE_OF_SCREEN) / 2) + enemySize.width/2 + enemySize.width * j + enemyGap * j,
+//                               visibleOrigin.y + visibleSize.height * ENEMY_ARMY_Y_POS_PERCENTAGE_OF_SCREEN - enemySize.height/2 - enemySize.height * i - enemyGap * i));
+//
+//            this->addChild(enemy, 1);
+//            enemies[i][j] = enemy;
+//
+//            if (enemyDeltaY == 0)
+//            {
+//                enemyDeltaY = (visibleSize.height * BATTLE_FIELD_HEIGHT_PERCENTAGE - (enemySize.height * ENEMY_ROW_COUNT + enemyGap * (ENEMY_ROW_COUNT - 1))) / ENEMY_NUMBER_OF_MOVEMENTS_FROM_TOP_TO_BOTTOM;
+//            }
+//        }
+//    }
+//}
+
 void GameScene::update(float dt)
 {
     if (gameState == OVER) return;
@@ -252,6 +312,8 @@ void GameScene::update(float dt)
 
     if (touchPointInJoystickArea != Point::ZERO)
     {
+        if (gameState == DEAD) return;
+
         auto newStickXPos = touchPointInJoystickArea.x;
         auto sliderMidX = joystickSlider->getPositionX();
         auto sliderLeftX = sliderMidX - joystickSlider->getBoundingBox().size.width / 2;
@@ -300,7 +362,7 @@ void GameScene::update(float dt)
 void GameScene::updateEnemy(float dt)
 {
     enemyMoveElapsedTime += dt;
-    if (enemyMoveElapsedTime >= enemyMoveInterval)
+    if (gameState != DEAD && enemyMoveElapsedTime >= enemyMoveInterval)
     {
         Enemy *rightMostEnemy = nullptr;
         Enemy *leftMostEnemy = nullptr;
@@ -383,7 +445,7 @@ void GameScene::checkCollision()
             }
 
             auto enemyMissileBox = enemy->getMissileBoundingBox();
-            if (enemy->isMissileVisible() && enemyMissileBox.intersectsRect(player->getBoundingBox()))
+            if (enemy->isMissileVisible() && player->isVisible() &&  enemyMissileBox.intersectsRect(player->getBoundingBox()))
             {
                 enemy->missileHit();
                 setPlayerDead();
@@ -490,13 +552,45 @@ void GameScene::setPlayerDead()
     if (playerLife < 0)
     {
         playerLife = 0;
+        setGameState(OVER);
+    }
+    else
+    {
+        setGameState(DEAD);
+        revivePlayerAfterDelay();
     }
 
     playerLifeImage3->setVisible(playerLife >= 3);
     playerLifeImage2->setVisible(playerLife >= 2);
     playerLifeImage1->setVisible(playerLife >= 1);
 
-    setGameState(OVER);
+    setPauseForEnemies(true);
+}
+
+void GameScene::revivePlayerAfterDelay()
+{
+    float playerReviveDelay = 1.0f;
+    CallFunc *callback = CallFunc::create(CC_CALLBACK_0(GameScene::setPlayerAlive, this));
+    this->runAction(Sequence::create(DelayTime::create(playerReviveDelay), callback, nullptr));
+}
+
+void GameScene::setPlayerAlive()
+{
+    player->setVisible(true);
+    setGameState(PLAYING);
+    setPauseForEnemies(false);
+}
+
+void GameScene::setPauseForEnemies(bool isPause)
+{
+    for (int i = 0; i < ENEMY_ROW_COUNT; ++i)
+    {
+        for (int j = 0; j < ENEMY_COL_COUNT; ++j)
+        {
+            auto enemy = enemies[i][j];
+            enemy->setPause(isPause);
+        }
+    }
 }
 
 void GameScene::onTouchesBegan(const std::vector<cocos2d::Touch*> &touches, Event* event)
@@ -567,7 +661,7 @@ bool GameScene::isPositionWithinJoystickArea(Point position)
 
 void GameScene::fireMissile(Ref* pSender)
 {
-    if (!missile->isVisible())
+    if (gameState != DEAD && !missile->isVisible())
     {
         missile->setPosition(player->getPositionX(), player->getPositionY() + player->getBoundingBox().size.height/2 + missile->getBoundingBox().size.height/2);
         missile->setVisible(true);

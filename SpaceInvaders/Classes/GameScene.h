@@ -60,6 +60,8 @@ enum GameState
     NOT_INITIALIZED,
     INITIALIZED,
     PLAYING,
+    //WIN,
+    DEAD,
     OVER
 };
 
@@ -77,6 +79,8 @@ public:
 
     //virtual void draw (cocos2d::Renderer* renderer, const kmMat4& transform, bool transformUpdated);    // debugging purpose
 
+    //void initializeForNextRound();
+
     void fireMissile(cocos2d::Ref* pSender);
 
     void onTouchesBegan(const std::vector<cocos2d::Touch*> &touches, cocos2d::Event* event);
@@ -93,9 +97,13 @@ public:
 
     void setEnemyDead(Enemy *enemy, int colIndexOfEnemy);
     void setPlayerDead();
+    void revivePlayerAfterDelay();
+    void setPlayerAlive();
 
     void setGameState(GameState state);
     void addScore(int score);
+
+    void setPauseForEnemies(bool isPause);
 
     GameState gameState;
 

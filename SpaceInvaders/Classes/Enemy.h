@@ -27,6 +27,7 @@ public:
     void missileOutOfBound();
 
     void setAlive(bool isAlive);
+    void setPause(bool isPaused);
 
     void setScoreValue(int scoreValue);
     int getScoreValue();
@@ -43,6 +44,7 @@ private:
     int _scoreValue;
 
     bool _isAtFrontLine;
+    bool _isPaused;
 };
 
 #endif
