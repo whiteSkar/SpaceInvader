@@ -226,66 +226,36 @@ bool GameScene::init()
     return true;
 }
 
-//void GameScene::initializeForNextRound()
-//{
-//    isEnemyMoveDownPending = false;
-//    isEnemyBelowPlayer = false;
-//    enemyMoveElapsedTime = 0;
-//    aliveEnemyCount = ENEMY_ROW_COUNT * ENEMY_COL_COUNT;
-//
-//    player->setPosition(Point(visibleOrigin.x + visibleSize.width / 2, visibleOrigin.y + visibleSize.height * PLAYER_Y_POS_PERCENTAGE_OF_SCREEN));
-//
-//    for (int i = 0; i < ENEMY_ROW_COUNT; ++i)
-//    {
-//        for (int j = 0; j < ENEMY_COL_COUNT; ++j)
-//        {
-//            std::vector<Sprite*> frames;
-//
-//            std::string enemyType = "small";
-//            if (i >= 1 && i <= 2)
-//                enemyType = "med";
-//            if (i >= 3)
-//                enemyType = "large";
-//
-//            // smaller enemies sprites need to be horizontally shorter. Otherwise, collision doesn't work properly
-//            auto sprite1 = Sprite::create("enemy_" + enemyType + ".png");
-//            auto sprite2 = Sprite::create("enemy_" + enemyType + "2.png");
-//
-//            sprite1->setScale(enemyExpectedWidth / sprite1->getBoundingBox().size.width);
-//            sprite2->setScale(enemyExpectedWidth / sprite2->getBoundingBox().size.width);
-//
-//            frames.push_back(sprite1);
-//            frames.push_back(sprite2);
-//
-//            auto enemy = Enemy::create(frames);
-//            enemy->setRepeat();
-//
-//            if (enemyType == "small")   // use constants
-//                enemy->setScoreValue(SCORE_VALUE_SMALL_ENEMY);
-//            else if (enemyType == "med")
-//                enemy->setScoreValue(SCORE_VALUE_MED_ENEMY);
-//            else
-//                enemy->setScoreValue(SCORE_VALUE_LARGE_ENEMY);
-//
-//            if (i == ENEMY_ROW_COUNT - 1)
-//            {
-//                enemy->setAtFrontLine(true);
-//            }
-//            
-//            auto enemySize = enemy->getSize();
-//            enemy->setPosition(Point(visibleOrigin.x + visibleSize.width * ((1.0f - ENEMY_ARMY_WIDTH_PERCENTAGE_OF_SCREEN) / 2) + enemySize.width/2 + enemySize.width * j + enemyGap * j,
-//                               visibleOrigin.y + visibleSize.height * ENEMY_ARMY_Y_POS_PERCENTAGE_OF_SCREEN - enemySize.height/2 - enemySize.height * i - enemyGap * i));
-//
-//            this->addChild(enemy, 1);
-//            enemies[i][j] = enemy;
-//
-//            if (enemyDeltaY == 0)
-//            {
-//                enemyDeltaY = (visibleSize.height * BATTLE_FIELD_HEIGHT_PERCENTAGE - (enemySize.height * ENEMY_ROW_COUNT + enemyGap * (ENEMY_ROW_COUNT - 1))) / ENEMY_NUMBER_OF_MOVEMENTS_FROM_TOP_TO_BOTTOM;
-//            }
-//        }
-//    }
-//}
+void GameScene::initializeForNextRound()
+{
+    isEnemyMoveDownPending = false;
+    isEnemyBelowPlayer = false;
+    enemyMoveElapsedTime = 0;
+    aliveEnemyCount = ENEMY_ROW_COUNT * ENEMY_COL_COUNT;
+    enemyMoveInterval = ENEMY_MOVE_INTERVAL_DEFAULT;
+
+    player->setPosition(Point(visibleOrigin.x + visibleSize.width / 2, visibleOrigin.y + visibleSize.height * PLAYER_Y_POS_PERCENTAGE_OF_SCREEN));
+
+    for (int i = 0; i < ENEMY_ROW_COUNT; ++i)
+    {
+        for (int j = 0; j < ENEMY_COL_COUNT; ++j)
+        {
+            auto enemy = enemies[i][j];
+            
+            enemy->reinitialize();
+            enemy->setAlive(true);
+
+            if (i == ENEMY_ROW_COUNT - 1)
+            {
+                enemy->setAtFrontLine(true);
+            }
+
+            auto enemySize = enemy->getSize();
+            enemy->setPosition(Point(visibleOrigin.x + visibleSize.width * ((1.0f - ENEMY_ARMY_WIDTH_PERCENTAGE_OF_SCREEN) / 2) + enemySize.width/2 + enemySize.width * j + enemyGap * j,
+                               visibleOrigin.y + visibleSize.height * ENEMY_ARMY_Y_POS_PERCENTAGE_OF_SCREEN - enemySize.height/2 - enemySize.height * i - enemyGap * i));
+        }
+    }
+}
 
 void GameScene::update(float dt)
 {
@@ -502,7 +472,7 @@ void GameScene::setGameState(GameState state)
 {
     gameState = state;
 
-    if (gameState == OVER)
+    if (gameState == OVER || gameState == WIN)
     {
         for (int i = 0; i < ENEMY_ROW_COUNT; ++i)
         {
@@ -511,6 +481,11 @@ void GameScene::setGameState(GameState state)
                 auto enemy = enemies[i][j];
                 enemy->unscheduleUpdate();
             }
+        }
+
+        if (gameState == WIN)
+        {
+            initializeForNextRound();
         }
     }
 }
@@ -530,7 +505,7 @@ void GameScene::setEnemyDead(Enemy *enemy, int colIndexOfEnemy)
     aliveEnemyCount--;
     if (aliveEnemyCount <= 0)
     {
-        setGameState(OVER);
+        setGameState(WIN);
     }
 
     for (int k = ENEMY_ROW_COUNT - 1; k >= 0; --k)

@@ -19,8 +19,8 @@ static const float UI_FIRE_BUTTON_X_POS = 0.75f;
 static const float UI_JOYSTICK_AREA_HEIGHT_MULTIPLIER = 5.0f;
 static const float UI_JOYSTICK_AREA_WIDTH_MULTIPLIER = 1.5f;
 
-static const int ENEMY_ROW_COUNT = 5;
-static const int ENEMY_COL_COUNT = 11;
+static const int ENEMY_ROW_COUNT = 5;   // 5
+static const int ENEMY_COL_COUNT = 11;  // 11
 static const int NUMBER_OF_ENEMIES = ENEMY_ROW_COUNT * ENEMY_COL_COUNT;
 
 static const int SCORE_VALUE_LARGE_ENEMY = 10;
@@ -60,7 +60,7 @@ enum GameState
     NOT_INITIALIZED,
     INITIALIZED,
     PLAYING,
-    //WIN,
+    WIN,
     DEAD,
     OVER
 };
@@ -79,7 +79,7 @@ public:
 
     //virtual void draw (cocos2d::Renderer* renderer, const kmMat4& transform, bool transformUpdated);    // debugging purpose
 
-    //void initializeForNextRound();
+    void initializeForNextRound();
 
     void fireMissile(cocos2d::Ref* pSender);
 

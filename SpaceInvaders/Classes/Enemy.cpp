@@ -39,6 +39,20 @@ bool Enemy::initWithFrames(std::vector<Sprite*> frames)
     return result;
 }
 
+void Enemy::reinitialize()
+{
+    AnimatableObject::reinitialize();
+    AnimatableObject::setRepeat();
+
+    _missileShootElapsedTime = 0.0f;
+    _nextMissileTimeInterval = ((float) (rand() % ((ENEMY_MISSILE_INTERVAL_MAX - ENEMY_MISSILE_INTERVAL_MIN) * 10))) / 10.0f + ENEMY_MISSILE_INTERVAL_MIN; // duplicate code
+    _isAtFrontLine = false;
+    _isPaused = false;
+    _scoreValue = DEFAULT_SCORE_VALUE;
+
+    _missile->setVisible(false);
+}
+
 void Enemy::update(float dt)
 {
     if (_missile->isVisible())  // missile should keep going even if the enemy died

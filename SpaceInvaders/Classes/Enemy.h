@@ -17,6 +17,8 @@ public:
     
     bool initWithFrames(std::vector<cocos2d::Sprite*> frames);
 
+    void reinitialize();
+
     //virtual void draw (cocos2d::Renderer* renderer, const kmMat4& transform, bool transformUpdated);    // debugging purpose
 
     void update(float dt);

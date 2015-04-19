@@ -10,6 +10,8 @@ public:
 
     bool initWithFrames(std::vector<cocos2d::Sprite*> frames);
 
+    void reinitialize();
+
     cocos2d::Rect getBoundingBox();
     cocos2d::Size getSize();
 

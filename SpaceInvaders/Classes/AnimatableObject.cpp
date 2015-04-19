@@ -26,10 +26,10 @@ bool AnimatableObject::initWithFrames(std::vector<Sprite*> frames)
         
         for (auto it = _frames.begin(); it != _frames.end(); ++it)
         {
-            auto sprite = *it;
-            sprite->setVisible(false);
-            sprite->setPosition(Point::ZERO);
-            this->addChild(sprite);
+            auto frame = *it;
+            frame->setVisible(false);
+            frame->setPosition(Point::ZERO);
+            this->addChild(frame);
         }
 
         auto firstFrame = _frames.empty() ? nullptr : _frames.front();
@@ -48,6 +48,28 @@ bool AnimatableObject::initWithFrames(std::vector<Sprite*> frames)
     }
 
     return result;
+}
+
+void AnimatableObject::reinitialize()
+{
+    _frameIterator = _frames.begin();
+    _isRepeat = false;
+    _isAlive = true;
+        
+    for (auto it = _frames.begin(); it != _frames.end(); ++it)
+    {
+        auto frame = *it;
+        frame->setVisible(false);
+        frame->setPosition(Point::ZERO);
+    }
+
+    auto firstFrame = _frames.empty() ? nullptr : _frames.front();
+    if (firstFrame)
+    {
+        firstFrame->setVisible(true);
+    }
+
+    this->setVisible(true);
 }
 
 Rect AnimatableObject::getBoundingBox()
@@ -88,7 +110,7 @@ void AnimatableObject::setAlive(bool isAlive, bool isApplyToNode)   // hacky way
     
     if (isApplyToNode)
     {
-        Node::setVisible(isAlive);
+        this->setVisible(isAlive);
     }
     else
     {
